@@ -11,6 +11,24 @@
 
     <artifactId>thrift-server-core</artifactId>
     <version>1.0</version>
-
+    <properties>
+        <thrift-common.version>1.0</thrift-common.version>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.r.framework.thrift</groupId>
+            <artifactId>common</artifactId>
+            <version>${thrift-common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
 
 </project>

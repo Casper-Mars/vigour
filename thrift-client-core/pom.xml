@@ -12,11 +12,15 @@
     <artifactId>thrift-client-core</artifactId>
     <version>1.0</version>
 
+    <properties>
+        <thrift-common.version>1.0</thrift-common.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.r.framework.thrift</groupId>
             <artifactId>common</artifactId>
-            <version>1.0</version>
+            <version>${thrift-common.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

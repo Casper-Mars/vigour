@@ -12,5 +12,12 @@
     <artifactId>thrift-eureka-server</artifactId>
     <version>1.0</version>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.r.framework</groupId>
+            <artifactId>thrift-server-core</artifactId>
+            <version>1.0</version>
+        </dependency>
+    </dependencies>
 
 </project>
