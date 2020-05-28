@@ -1,5 +1,6 @@
 # springboot-starter-thrift
 
+> 原始项目在[这里](https://github.com/Casper-Mars/springboot-starter-thrift)
 ---
 ## 开发阶段
 
