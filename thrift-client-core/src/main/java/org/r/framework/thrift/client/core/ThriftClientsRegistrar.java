@@ -3,8 +3,6 @@ package org.r.framework.thrift.client.core;
 import org.r.framework.thrift.client.core.annotation.EnableThriftClient;
 import org.r.framework.thrift.client.core.annotation.ThriftClient;
 import org.r.framework.thrift.client.core.factory.ProxyClientBeanFactory;
-import org.r.framework.thrift.client.core.provider.ClientWrapperProvider;
-import org.r.framework.thrift.client.core.wrapper.ClientWrapper;
 import org.r.framework.thrift.common.util.ClassTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +25,10 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * date 20-5-8 上午9:01
@@ -59,27 +60,29 @@ public class ThriftClientsRegistrar implements ImportBeanDefinitionRegistrar, Re
         if (annotationAttributes == null) {
             throw new RuntimeException("missing annotation info!!!!");
         }
-        String basePackage = (String) annotationAttributes.get("basePackage");
-        registerThriftClient(basePackage, importingClassMetadata, registry);
+        registerThriftClient(importingClassMetadata, registry);
     }
 
 
-    public void registerThriftClient(String ifaceBasePackage, AnnotationMetadata metadata, BeanDefinitionRegistry registry) {
+    public void registerThriftClient(AnnotationMetadata metadata, BeanDefinitionRegistry registry) {
 
-        /*获取全部的thrift原生服务客户端接口*/
-        ClientWrapperProvider clientWrapperProvider = new ClientWrapperProvider(ifaceBasePackage, this.getClass().getClassLoader());
-        List<ClientWrapper> allClients = clientWrapperProvider.getAllClients();
-        if (CollectionUtils.isEmpty(allClients)) {
-            log.warn("0 client found in the project");
+        /*获取全部有客户端注解的实现类*/
+        Map<String, String> ifaceImplClass = getIfaceImplClass(metadata);
+        if (CollectionUtils.isEmpty(ifaceImplClass)) {
+            log.warn("can not find any implement class with annotation ThriftClient");
             return;
         }
-        Map<String, String> ifaceImplClass = getIfaceImplClass(metadata);
-        for (ClientWrapper client : allClients) {
-            String fallbackClassName = ifaceImplClass.get(client.getServerName());
-            registryClientProxy(registry, client.getClientClass().getName(), fallbackClassName);
+        for (Map.Entry<String, String> entry : ifaceImplClass.entrySet()) {
+            registryClientProxy(registry, entry.getKey(), entry.getValue());
         }
     }
 
+    /**
+     * 获取有客户端注解的实现类
+     *
+     * @param metadata
+     * @return
+     */
     private Map<String, String> getIfaceImplClass(AnnotationMetadata metadata) {
         ClassPathScanningCandidateComponentProvider scanner = getScanner();
         scanner.setResourceLoader(this.resourceLoader);
@@ -99,6 +102,7 @@ public class ThriftClientsRegistrar implements ImportBeanDefinitionRegistrar, Re
                     if (StringUtils.isEmpty(serviceName)) {
                         continue;
                     }
+                    log.info("find implement class {} for server {}", className, serviceName);
                     result.put(serviceName, className);
                 }
             }
@@ -124,7 +128,7 @@ public class ThriftClientsRegistrar implements ImportBeanDefinitionRegistrar, Re
 
         AbstractBeanDefinition beanDefinition = definition.getBeanDefinition();
         beanDefinition.setPrimary(true);
-        BeanDefinitionHolder holder = new BeanDefinitionHolder(beanDefinition, clientClassName+"-proxy");
+        BeanDefinitionHolder holder = new BeanDefinitionHolder(beanDefinition, clientClassName + "-proxy");
         BeanDefinitionReaderUtils.registerBeanDefinition(holder, registry);
     }
 

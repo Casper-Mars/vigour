@@ -25,7 +25,7 @@ public class ThriftClientAutoConfig {
     private ConfigProperties configProperties;
 
     @Bean
-    @ConditionalOnExpression("#{!''.equals(environment['thrift.client.servers'])}")
+    @ConditionalOnExpression("#{'' != ${thrift.client.servers}}")
     @ConditionalOnMissingBean
     public ServiceInfoProvider serviceInfoProvider() {
         return new DefaultServiceInfoProvider(configProperties.getServers());
