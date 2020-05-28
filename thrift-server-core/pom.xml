@@ -16,8 +16,8 @@
     </properties>
     <dependencies>
         <dependency>
-            <groupId>org.r.framework.thrift</groupId>
-            <artifactId>common</artifactId>
+            <groupId>org.r.framework</groupId>
+            <artifactId>thrift-common</artifactId>
             <version>${thrift-common.version}</version>
         </dependency>
         <dependency>
