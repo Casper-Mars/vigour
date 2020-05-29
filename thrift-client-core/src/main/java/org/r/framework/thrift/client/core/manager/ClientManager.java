@@ -21,18 +21,35 @@ public class ClientManager implements ServiceObserver {
 
     private final Logger log = LoggerFactory.getLogger(ClientManager.class);
 
+    /**
+     * 服务信息提供者
+     */
     private final ServiceInfoProvider serviceInfoProvider;
-    private final Map<String, ServerManager> managerMap;
+    /**
+     * 服务列表
+     */
+    private final Map<String, ServerManager> serverManagerMap;
+    /**
+     * 底层socket管理器，用于多个service复用同一个socket，降低系统的开销
+     */
     private final TransportManager transportManager;
+    /**
+     * thrift 的协议工厂
+     */
     private final ProtocolFactory protocolFactory;
+    /**
+     * 目标服务列表，会使用此列表进行过滤，列表上有的服务才会进行处理和维护
+     */
+    private final Set<String> targetServiceList;
 
 
     public ClientManager(ServiceInfoProvider serviceInfoProvider) {
         this.serviceInfoProvider = serviceInfoProvider;
         serviceInfoProvider.addObserver(this);
-        this.managerMap = new HashMap<>();
+        this.serverManagerMap = new HashMap<>();
         this.transportManager = new TransportManager();
         this.protocolFactory = new ProtocolFactory();
+        this.targetServiceList = new HashSet<>();
         updateClientList();
     }
 
@@ -46,17 +63,17 @@ public class ClientManager implements ServiceObserver {
 
         log.info("server list refresh");
         /*获取全部的服务实例*/
-        List<ServerWrapper> allServer = serviceInfoProvider.getAllServer();
+        List<ServerWrapper> allServer = serviceInfoProvider.getTargetServer(this.targetServiceList);
         /*提取最新列表的服务名称列表*/
         Set<String> serverName = allServer.stream().map(ServerWrapper::getName).collect(Collectors.toSet());
         /*更新transport*/
         transportManager.updateTransportList(allServer);
         /*移除不存在的服务的服务管理器*/
-        Collection<String> deletes = new HashSet<>(managerMap.keySet());
+        Collection<String> deletes = new HashSet<>(serverManagerMap.keySet());
         deletes.removeAll(serverName);
         if (!CollectionUtils.isEmpty(deletes)) {
             for (String delete : deletes) {
-                managerMap.remove(delete);
+                serverManagerMap.remove(delete);
             }
         }
 
@@ -67,10 +84,10 @@ public class ClientManager implements ServiceObserver {
                 transportManager.deleteTransport(serverWrapper.getHost(), serverWrapper.getPort());
             } else {
                 log.info("server:{}[{}:{}] is up", serverWrapper.getName(), serverWrapper.getHost(), serverWrapper.getPort());
-                ServerManager serverManager = managerMap.get(serverWrapper.getName());
+                ServerManager serverManager = serverManagerMap.get(serverWrapper.getName());
                 if (serverManager == null) {
                     serverManager = new ServerManager(serverWrapper.getName(), this.transportManager, this.protocolFactory);
-                    managerMap.put(serverWrapper.getName(), serverManager);
+                    serverManagerMap.put(serverWrapper.getName(), serverManager);
                 }
                 serverManager.registryClient(serverWrapper.getHost(), serverWrapper.getPort());
             }
@@ -78,12 +95,22 @@ public class ClientManager implements ServiceObserver {
     }
 
     public ClientExecutor buildClient(String serverName, Class<?> serverClass) {
-        ServerManager manager = managerMap.get(serverName);
+        ServerManager manager = serverManagerMap.get(serverName);
         ClientExecutor client = null;
         if (manager != null) {
             client = manager.getClient(serverClass);
         }
         return client;
     }
+
+    /**
+     * 添加目标服务
+     *
+     * @param serviceName 目标服务名称
+     */
+    public void addTargetService(String serviceName) {
+        this.targetServiceList.add(serviceName);
+    }
+
 
 }

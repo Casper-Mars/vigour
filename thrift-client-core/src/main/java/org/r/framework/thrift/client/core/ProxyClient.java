@@ -30,6 +30,7 @@ public class ProxyClient implements MethodInterceptor {
         this.manager = manager;
         this.fallback = fallback;
         this.serviceClass = serviceClass;
+        manager.addTargetService(serverName);
     }
 
     @Override

@@ -6,10 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * date 2020/5/7 21:18
@@ -44,6 +41,17 @@ public class DefaultServiceInfoProvider implements ServiceInfoProvider {
 
     @Override
     public List<ServerWrapper> getAllServer() {
+        return serverWrappers;
+    }
+
+    /**
+     * 获取列表指定的服务的信息
+     *
+     * @param targetServerList 指定的服务列表
+     * @return
+     */
+    @Override
+    public List<ServerWrapper> getTargetServer(Set<String> targetServerList) {
         return serverWrappers;
     }
 

@@ -4,6 +4,7 @@ import org.r.framework.thrift.client.core.observer.ServiceObserver;
 import org.r.framework.thrift.client.core.wrapper.ServerWrapper;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * date 20-5-7 下午5:50
@@ -19,6 +20,14 @@ public interface ServiceInfoProvider {
      * @return
      */
     List<ServerWrapper> getAllServer();
+
+    /**
+     * 获取列表指定的服务的信息
+     *
+     * @param targetServerList 指定的服务列表
+     * @return
+     */
+    List<ServerWrapper> getTargetServer(Set<String> targetServerList);
 
     /**
      * 通过服务名称获得服务信息

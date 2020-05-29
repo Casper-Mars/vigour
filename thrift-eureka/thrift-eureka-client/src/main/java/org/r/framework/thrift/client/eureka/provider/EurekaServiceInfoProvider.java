@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * date 20-5-9 下午4:23
@@ -62,6 +63,18 @@ public class EurekaServiceInfoProvider implements ServiceInfoProvider {
         }
         return serverWrappers;
     }
+
+    /**
+     * 获取列表指定的服务的信息
+     *
+     * @param targetServerList 指定的服务列表
+     * @return
+     */
+    @Override
+    public List<ServerWrapper> getTargetServer(Set<String> targetServerList) {
+        return this.serverWrappers.stream().filter(t -> targetServerList.contains(t.getName())).collect(Collectors.toList());
+    }
+
 
     @Override
     public ServerWrapper getServer(String serverName) {
