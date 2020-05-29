@@ -1,4 +1,4 @@
-# springboot-starter-thrift
+# Vigour
 
 > 原始项目在[这里](https://github.com/Casper-Mars/springboot-starter-thrift)。原始项目不再维护，只是作为仓库保存历史代码
 
@@ -96,27 +96,6 @@
 * client-eureka
 
 > 实现了服务提供的功能，并实时刷新服务。![avatar][client-eureka-image]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
