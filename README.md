@@ -28,9 +28,9 @@
 ### 第四阶段（已完成）
 融合server和client。实现server和client并存，赋予微服务服务能力的同时也有客户端功能。
 
-### 第五阶段（待实现）
+### 第五阶段（已完成）
 分离客户端和eurake客户端，把纯封装thrift的抽出成client-core，再定义eurake客户端实现eurake-thrift-client。eurake-thrift-client只需提供eurake相关的bean并引入client-core依赖组装而成。分离的目的为了未来更好地扩展出其他版本的服务注册中心的客户端
-
+同理分离服务端
 ### 第六阶段（待实现）
 修改客户端处理服务的逻辑。原来的扫描全部的服务并建立代理bean的方式有缺陷。在微服务不需要大部分的服务时，只会消耗系统资源去维护服务列表（包括列表刷新和底层socket的操作）。
 因此，现在改成按需建立代理bean，只有被ThriftClient注解注释的才会被认为是需要的服务而创建代理bean。同时被注解注释的类会作为熔断回调类在服务down的时候调用。
