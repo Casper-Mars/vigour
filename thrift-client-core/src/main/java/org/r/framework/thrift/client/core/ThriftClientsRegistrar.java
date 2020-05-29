@@ -73,7 +73,7 @@ public class ThriftClientsRegistrar implements ImportBeanDefinitionRegistrar, Re
             return;
         }
         for (Map.Entry<String, String> entry : ifaceImplClass.entrySet()) {
-            registryClientProxy(registry, entry.getKey(), entry.getValue());
+            registryClientProxy(registry, entry.getValue(), entry.getValue());
         }
     }
 

@@ -8,9 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 
 /**
  * date 20-4-30 下午3:19
@@ -25,16 +27,14 @@ public class ThriftClientAutoConfig {
     private ConfigProperties configProperties;
 
     @Bean
-    @ConditionalOnExpression("#{'' != ${thrift.client.servers}}")
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(ServiceInfoProvider.class)
     public ServiceInfoProvider serviceInfoProvider() {
         return new DefaultServiceInfoProvider(configProperties.getServers());
     }
 
     @Bean
-    @ConditionalOnMissingBean(ClientManager.class)
-    @ConditionalOnBean
-    public ClientManager transportProvider(ServiceInfoProvider serviceInfoProvider) {
+    @ConditionalOnBean(ServiceInfoProvider.class)
+    public ClientManager clientManager(ServiceInfoProvider serviceInfoProvider) {
         return new ClientManager(serviceInfoProvider);
     }
 
