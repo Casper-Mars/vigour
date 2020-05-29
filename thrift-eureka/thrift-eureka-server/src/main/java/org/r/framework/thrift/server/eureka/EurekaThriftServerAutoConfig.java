@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Configuration;
 public class EurekaThriftServerAutoConfig {
 
     @Bean
-    @ConditionalOnBean
+    @ConditionalOnBean(ServerInfoProvider.class)
     public ServerMetaDataProvider serverMetaDataProvider(ServerInfoProvider serverInfoProvider) {
         return new ServerMetaDataProvider(serverInfoProvider);
     }

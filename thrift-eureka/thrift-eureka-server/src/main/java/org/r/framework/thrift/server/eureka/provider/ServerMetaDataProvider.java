@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSONObject;
 import org.r.framework.thrift.common.Constants;
 import org.r.framework.thrift.server.core.provider.ServerInfoProvider;
 import org.r.framework.thrift.server.core.wrapper.ServiceBeanWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cloud.netflix.eureka.EurekaInstanceConfigBean;
 import org.springframework.cloud.netflix.eureka.metadata.DefaultManagementMetadataProvider;
 import org.springframework.cloud.netflix.eureka.metadata.ManagementMetadata;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
  **/
 public class ServerMetaDataProvider extends DefaultManagementMetadataProvider {
 
+    private final Logger log = LoggerFactory.getLogger(ServerMetaDataProvider.class);
 
     private final ServerInfoProvider serverInfoProvider;
 
@@ -37,9 +40,9 @@ public class ServerMetaDataProvider extends DefaultManagementMetadataProvider {
         int port = this.serverInfoProvider.getPort();
         List<ServiceBeanWrapper> allService = serverInfoProvider.getAllService();
         List<String> serverNameList = allService.stream().map(t -> t.getName() + ":" + port).collect(Collectors.toList());
-        metadataMap.put(Constants.SERVERINFO, JSONObject.toJSONString(serverNameList));
-
-
+        String serviceListStr = JSONObject.toJSONString(serverNameList);
+        metadataMap.put(Constants.SERVERINFO, serviceListStr);
+        log.info("registry service to eureka [{}]",serviceListStr);
         return super.get(instance, serverPort, serverContextPath, managementContextPath, managementPort);
     }
 }
