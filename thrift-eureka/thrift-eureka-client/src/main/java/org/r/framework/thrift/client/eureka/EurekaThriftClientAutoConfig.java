@@ -1,8 +1,9 @@
 package org.r.framework.thrift.client.eureka;
 
 import com.netflix.discovery.EurekaClient;
-import org.r.framework.thrift.client.eureka.provider.EurekaServiceInfoProvider;
+import org.r.framework.thrift.client.core.ThriftClientAutoConfig;
 import org.r.framework.thrift.client.core.provider.ServiceInfoProvider;
+import org.r.framework.thrift.client.eureka.provider.EurekaServiceInfoProvider;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,7 +14,7 @@ import org.springframework.context.annotation.Configuration;
  * @author casper
  **/
 @Configuration
-public class EurekaThriftClientAutoConfig {
+public class EurekaThriftClientAutoConfig extends ThriftClientAutoConfig {
 
 
     @Bean

@@ -15,23 +15,4 @@ import java.util.List;
 public class ConfigProperties {
 
 
-    private boolean enableEureka;
-
-    private List<String> servers;
-
-    public List<String> getServers() {
-        return servers;
-    }
-
-    public void setServers(List<String> servers) {
-        this.servers = servers;
-    }
-
-    public boolean isEnableEureka() {
-        return enableEureka;
-    }
-
-    public void setEnableEureka(boolean enableEureka) {
-        this.enableEureka = enableEureka;
-    }
 }
