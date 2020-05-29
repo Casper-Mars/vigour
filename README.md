@@ -1,6 +1,7 @@
 # springboot-starter-thrift
 
-> 原始项目在[这里](https://github.com/Casper-Mars/springboot-starter-thrift)
+> 原始项目在[这里](https://github.com/Casper-Mars/springboot-starter-thrift)。原始项目不再维护，只是作为仓库保存历史代码
+
 ---
 ## 开发阶段
 
@@ -76,3 +77,5 @@
 * 问题：thrift服务列表更新时，如果是执行移动服务操作，则有几率响应用户请求的时候，刚好获取列表最后一个实例的同时，该实例被移除，会导致访问越界。
 * 根本原因：多线程安全问题
 * 解决方案：加读写锁，不过会有一定的响应性能损耗，一定几率会挂起响应。如果不加锁，直接捕抓异常，则一定几率降低服务质量，会触发熔断
+
+---
