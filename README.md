@@ -88,9 +88,14 @@
 
 > ![avatar][client-core-image]
 
+* client-core 
+
+> 只是核心的部分，实现了扫描客户端并动态代理的功能。细节上着重体现在注入和维护两方面。
 
 
+* client-eureka
 
+> 实现了服务提供的功能，并实时刷新服务。![avatar][client-eureka-image]
 
 
 
@@ -118,4 +123,4 @@
 
 
 [client-core-image]:./info/client-core.png
-
+[client-eureka-image]:./info/client-eureka.png
