@@ -1,6 +1,7 @@
 # springboot-starter-thrift
 
-> 原始项目在[这里](https://github.com/Casper-Mars/springboot-starter-thrift)
+> 原始项目在[这里](https://github.com/Casper-Mars/springboot-starter-thrift)。原始项目不再维护，只是作为仓库保存历史代码
+
 ---
 ## 开发阶段
 
@@ -77,7 +78,6 @@
 * 解决方案：加读写锁，不过会有一定的响应性能损耗，一定几率会挂起响应。如果不加锁，直接捕抓异常，则一定几率降低服务质量，会触发熔断
 
 ---
-
 ## 开发指南
 
 ### 架构
