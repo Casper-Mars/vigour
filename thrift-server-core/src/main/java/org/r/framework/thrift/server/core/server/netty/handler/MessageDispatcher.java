@@ -25,6 +25,7 @@ import io.netty.util.TimerTask;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
+import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TMessage;
 import org.apache.thrift.protocol.TMessageType;
 import org.apache.thrift.protocol.TProtocol;
@@ -371,8 +372,9 @@ public class MessageDispatcher extends ChannelInboundHandlerAdapter {
             TProtocolPair protocolPair = duplexProtocolFactory.getProtocolPair(transportPair);
             TProtocol inProtocol = protocolPair.getInputProtocol();
             TProtocol outProtocol = protocolPair.getOutputProtocol();
+            TProtocol tp = new TBinaryProtocol(messageTransport);
 
-            processRequest(ctx, message, messageTransport, inProtocol, outProtocol);
+            processRequest(ctx, message, messageTransport, tp, tp);
         } else {
             super.channelRead(ctx, msg);
         }

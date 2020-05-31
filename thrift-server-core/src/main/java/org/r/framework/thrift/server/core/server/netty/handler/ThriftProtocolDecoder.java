@@ -16,11 +16,17 @@ import org.r.framework.thrift.server.core.server.netty.core.ThriftMessage;
 import org.r.framework.thrift.server.core.server.netty.core.ThriftTransportType;
 
 /**
+ * 这里的原生的thrift消息类型分了了两种，一种是frame，一种是unframe。
+ * frame是指一个完整的消息是有固定大小的，少了就填充。应用这个机制是为了解决粘包和拆包的问题，一般是由于用了netty做客户端的底层通讯框架
+ * unframe是指每个消息没有大小固定的说明，就是普通的数据流。这种数据是会产生粘包和拆包的问题的，依然保留是为了兼容原生的thrift客户端
+ * <p>
+ * <p>
+ * <p>
+ * <p>
  * date 20-5-6 下午4:15
  *
  * @author casper
  **/
-// TODO: 20-5-7 检查ByteBuf的创建，防止内存泄露
 public class ThriftProtocolDecoder extends ChannelInboundHandlerAdapter {
 
     public static final int MESSAGE_FRAME_SIZE = 4;
@@ -37,22 +43,16 @@ public class ThriftProtocolDecoder extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         ThriftMessage message = null;
-        if(msg instanceof ByteBuf){
-            ByteBuf buffer = (ByteBuf)msg;
+        if (msg instanceof ByteBuf) {
+            ByteBuf buffer = (ByteBuf) msg;
 
-//            /*test begin*/
-//
-//            int len = buffer.readableBytes();
-//            byte[] buf = new byte[len];
-//            buffer.readBytes(buf,0,len);
-//
-//
-//
-//            /*test end*/
+            /*buffer不可读或者buffer的大小还不够一个int（用来存放数据长度的）*/
             if (!buffer.isReadable() || buffer.readableBytes() < MESSAGE_FRAME_SIZE) {
                 return;
             }
+            /*获取buffer的第一个16位无符号整形数作为判断的标志位*/
             short firstByte = buffer.getUnsignedByte(0);
+            /*如果标志位大于等于128，则buffer的数据是原生的thrift请求。否则，是经过netty封装的数据*/
             if (firstByte >= 0x80) {
                 ByteBuf messageBuffer = tryDecodeUnframedMessage(ctx, ctx.channel(), buffer, inputProtocolFactory);
                 if (messageBuffer != null) {
@@ -60,8 +60,8 @@ public class ThriftProtocolDecoder extends ChannelInboundHandlerAdapter {
                     // protocol id (and thus it is unframed).
                     message = new ThriftMessage(messageBuffer, ThriftTransportType.UNFRAMED);
                 }
-            }else {
-                ByteBuf messageBuffer = tryDecodeFramedMessage(ctx, ctx.channel(), buffer, true);
+            } else {
+                ByteBuf messageBuffer = tryDecodeFramedMessage(ctx, buffer);
                 if (messageBuffer != null) {
                     // Messages with a zero MSB in the first byte are framed messages
                     message = new ThriftMessage(messageBuffer, ThriftTransportType.FRAMED);
@@ -69,33 +69,30 @@ public class ThriftProtocolDecoder extends ChannelInboundHandlerAdapter {
             }
 
         }
-        if(message == null){
+        if (message == null) {
             super.channelRead(ctx, msg);
-        }else {
-            super.channelRead(ctx,message);
+        } else {
+            super.channelRead(ctx, message);
         }
     }
 
     protected ByteBuf tryDecodeFramedMessage(ChannelHandlerContext ctx,
-                                             Channel channel,
-                                             ByteBuf buffer,
-                                             boolean stripFraming)
-    {
+                                             ByteBuf buffer) {
         // Framed messages are prefixed by the size of the frame (which doesn't include the
         // framing itself).
 
         int messageStartReaderIndex = buffer.readerIndex();
         int messageContentsOffset;
 
-        if (stripFraming) {
-            messageContentsOffset = messageStartReaderIndex + MESSAGE_FRAME_SIZE;
-        }
-        else {
-            messageContentsOffset = messageStartReaderIndex;
-        }
+        /*
+        * 第一个可读位置的4个字节代表的整形数是指这个frame的大小，这个4个字节不应该计算在数据中，应该排除出来。
+        * 所以消息数据的开始位置是第一个可读位置偏移4个字节
+        * */
+        messageContentsOffset = messageStartReaderIndex + MESSAGE_FRAME_SIZE;
 
-        // The full message is larger by the size of the frame size prefix
+        /*这个消息的大小是有效消息大小和有效消息大小指示量的大小之和，单位值字节*/
         int messageLength = buffer.getInt(messageStartReaderIndex) + MESSAGE_FRAME_SIZE;
+        /**/
         int messageContentsLength = messageStartReaderIndex + messageLength - messageContentsOffset;
 
         if (messageContentsLength > maxFrameSize) {
@@ -126,8 +123,7 @@ public class ThriftProtocolDecoder extends ChannelInboundHandlerAdapter {
                                                Channel channel,
                                                ByteBuf buffer,
                                                TProtocolFactory inputProtocolFactory)
-            throws TException
-    {
+            throws TException {
         // Perform a trial decode, skipping through
         // the fields, to see whether we have an entire message available.
 
@@ -171,8 +167,7 @@ public class ThriftProtocolDecoder extends ChannelInboundHandlerAdapter {
         return messageBuffer;
     }
 
-    protected ByteBuf extractFrame(ByteBuf buffer, int index, int length)
-    {
+    protected ByteBuf extractFrame(ByteBuf buffer, int index, int length) {
         // Slice should be sufficient here (and avoids the copy in LengthFieldBasedFrameDecoder)
         // because we know no one is going to modify the contents in the read buffers.
         return buffer.slice(index, length);
