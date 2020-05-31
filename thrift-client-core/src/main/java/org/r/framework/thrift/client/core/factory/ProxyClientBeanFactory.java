@@ -14,7 +14,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-import sun.rmi.runtime.Log;
 
 /**
  * date 20-5-8 下午12:44
