@@ -1,4 +1,4 @@
-package org.r.framework.thrift.server.core.server.netty.handler;
+package org.r.framework.thrift.common.netty;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -6,14 +6,11 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.TooLongFrameException;
 import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.protocol.TProtocolUtil;
 import org.apache.thrift.protocol.TType;
 import org.apache.thrift.transport.TTransportException;
-import org.r.framework.thrift.common.netty.NettyTransport;
-import org.r.framework.thrift.common.netty.ThriftMessage;
-import org.r.framework.thrift.common.netty.ThriftTransportType;
 
 /**
  * 这里的原生的thrift消息类型分了了两种，一种是frame，一种是unframe。
@@ -33,11 +30,9 @@ public class ThriftProtocolDecoder extends ChannelInboundHandlerAdapter {
 
 
     private long maxFrameSize;
-    private TProtocolFactory inputProtocolFactory;
 
-    public ThriftProtocolDecoder(long maxFrameSize, TProtocolFactory inputProtocolFactory) {
+    public ThriftProtocolDecoder(long maxFrameSize) {
         this.maxFrameSize = maxFrameSize;
-        this.inputProtocolFactory = inputProtocolFactory;
     }
 
     @Override
@@ -55,7 +50,7 @@ public class ThriftProtocolDecoder extends ChannelInboundHandlerAdapter {
             /*如果标志位大于等于128，则buffer的数据是原生的thrift请求。否则，是经过netty封装的数据*/
 
             if (firstByte >= 0x80) {
-                ByteBuf messageBuffer = tryDecodeUnframedMessage(ctx, ctx.channel(), buffer, inputProtocolFactory);
+                ByteBuf messageBuffer = tryDecodeUnframedMessage(ctx, ctx.channel(), buffer);
                 if (messageBuffer != null) {
                     // A non-zero MSB for the first byte of the message implies the message starts with a
                     // protocol id (and thus it is unframed).
@@ -122,8 +117,8 @@ public class ThriftProtocolDecoder extends ChannelInboundHandlerAdapter {
 
     protected ByteBuf tryDecodeUnframedMessage(ChannelHandlerContext ctx,
                                                Channel channel,
-                                               ByteBuf buffer,
-                                               TProtocolFactory inputProtocolFactory)
+                                               ByteBuf buffer
+                                               )
             throws TException {
         // Perform a trial decode, skipping through
         // the fields, to see whether we have an entire message available.
@@ -135,8 +130,7 @@ public class ThriftProtocolDecoder extends ChannelInboundHandlerAdapter {
             NettyTransport decodeAttemptTransport =
                     new NettyTransport(channel, buffer, ThriftTransportType.UNFRAMED);
             int initialReadBytes = decodeAttemptTransport.getReadByteCount();
-            TProtocol inputProtocol =
-                    inputProtocolFactory.getProtocol(decodeAttemptTransport);
+            TProtocol inputProtocol = new TBinaryProtocol(decodeAttemptTransport);
 
             // Skip through the message
             inputProtocol.readMessageBegin();

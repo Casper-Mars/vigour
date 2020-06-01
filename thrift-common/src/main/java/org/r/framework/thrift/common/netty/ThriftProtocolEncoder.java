@@ -1,18 +1,16 @@
-package org.r.framework.thrift.server.core.server.netty.handler;
+package org.r.framework.thrift.common.netty;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.handler.codec.TooLongFrameException;
-import org.r.framework.thrift.common.netty.ThriftMessage;
 
 /**
  * date 20-5-6 下午4:38
  *
  * @author casper
  **/
-// TODO: 20-5-7 检查ByteBuf的创建，防止内存泄露
 public class ThriftProtocolEncoder extends MessageToByteEncoder<ThriftMessage> {
 
 

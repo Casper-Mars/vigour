@@ -26,7 +26,6 @@ public class ThriftServer implements ServerDelegate {
             TServerSocket tServerSocket = new TServerSocket(serverDef.getServerPort());
             TServer.Args args1 = new TServer.Args(tServerSocket);
             args1.processor(processor);
-            args1.protocolFactory(serverDef.getDuplexProtocolFactory().getInputProtocolFactory());
             TServer server = new TSimpleServer(args1);
             log.info("server start at " + serverDef.getServerPort());
             server.serve();

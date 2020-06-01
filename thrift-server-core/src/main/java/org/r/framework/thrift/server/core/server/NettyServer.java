@@ -8,10 +8,10 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import org.r.framework.thrift.common.netty.ThriftProtocolDecoder;
+import org.r.framework.thrift.common.netty.ThriftProtocolEncoder;
 import org.r.framework.thrift.server.core.server.netty.handler.ConnectHandler;
 import org.r.framework.thrift.server.core.server.netty.handler.MessageDispatcher;
-import org.r.framework.thrift.server.core.server.netty.handler.ThriftProtocolDecoder;
-import org.r.framework.thrift.server.core.server.netty.handler.ThriftProtocolEncoder;
 import org.r.framework.thrift.server.core.wrapper.ServerDef;
 
 /**
@@ -19,7 +19,6 @@ import org.r.framework.thrift.server.core.wrapper.ServerDef;
  *
  * @author casper
  */
-// TODO: 20-5-7 重构代码结构
 public class NettyServer implements ServerDelegate {
 
 
@@ -35,7 +34,7 @@ public class NettyServer implements ServerDelegate {
             protected void initChannel(SocketChannel socketChannel) throws Exception {
                 ChannelPipeline cp = socketChannel.pipeline();
                 cp.addLast(ConnectHandler.class.getSimpleName(),new ConnectHandler());
-                cp.addLast(ThriftProtocolDecoder.class.getSimpleName(), new ThriftProtocolDecoder(serverDef.getMaxFrameSize(), serverDef.getDuplexProtocolFactory().getInputProtocolFactory()));
+                cp.addLast(ThriftProtocolDecoder.class.getSimpleName(), new ThriftProtocolDecoder(serverDef.getMaxFrameSize()));
                 cp.addLast(ThriftProtocolEncoder.class.getSimpleName(), new ThriftProtocolEncoder(serverDef.getMaxFrameSize()));
                 cp.addLast(MessageDispatcher.class.getSimpleName(), new MessageDispatcher(serverDef, null));
             }

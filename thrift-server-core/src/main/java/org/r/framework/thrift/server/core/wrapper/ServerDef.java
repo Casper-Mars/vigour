@@ -16,7 +16,6 @@
 package org.r.framework.thrift.server.core.wrapper;
 
 import org.apache.thrift.TProcessor;
-import org.r.framework.thrift.server.core.server.netty.core.TDuplexProtocolFactory;
 
 import java.util.concurrent.Executor;
 
@@ -30,7 +29,6 @@ public class ServerDef
     private final int maxConnections;
     private final int queuedResponseLimit;
     private final TProcessor processor;
-    private final TDuplexProtocolFactory duplexProtocolFactory;
     private final Executor executor;
     private final String name;
 
@@ -43,7 +41,6 @@ public class ServerDef
             int maxFrameSize,
             int queuedResponseLimit,
             int maxConnections,
-            TDuplexProtocolFactory duplexProtocolFactory,
             TProcessor processor,
             Executor executor
     )
@@ -55,7 +52,6 @@ public class ServerDef
         this.maxConnections = maxConnections;
         this.queuedResponseLimit = queuedResponseLimit;
         this.processor = processor;
-        this.duplexProtocolFactory = duplexProtocolFactory;
         this.executor = executor;
     }
 
@@ -77,12 +73,6 @@ public class ServerDef
     public int getQueuedResponseLimit()
     {
         return queuedResponseLimit;
-    }
-
-
-    public TDuplexProtocolFactory getDuplexProtocolFactory()
-    {
-        return duplexProtocolFactory;
     }
 
     public Object getClientIdleTimeout() {

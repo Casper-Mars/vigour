@@ -1,8 +1,6 @@
 package org.r.framework.thrift.server.core.builder;
 
 import org.apache.thrift.TProcessor;
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.r.framework.thrift.server.core.server.netty.core.TDuplexProtocolFactory;
 import org.r.framework.thrift.server.core.wrapper.ServerDef;
 
 import java.util.concurrent.Executor;
@@ -29,7 +27,6 @@ public class ServerDefBuilder {
         private int maxConnections = 0;
         private int queuedResponseLimit = 16;
         private TProcessor processor;
-        private TDuplexProtocolFactory duplexProtocolFactory;
         private Executor executor;
         private String name = "default server";
 
@@ -59,10 +56,6 @@ public class ServerDefBuilder {
             return this;
         }
 
-        public InnerBuilder duplexProtocolFactory(TDuplexProtocolFactory duplexProtocolFactory) {
-            this.duplexProtocolFactory = duplexProtocolFactory;
-            return this;
-        }
 
         public InnerBuilder executor(ExecutorService executorService) {
             this.executor = executorService;
@@ -79,16 +72,12 @@ public class ServerDefBuilder {
             if(executor == null){
                 executor = Executors.newCachedThreadPool();
             }
-            if(duplexProtocolFactory == null){
-                duplexProtocolFactory = TDuplexProtocolFactory.fromSingleFactory(new TBinaryProtocol.Factory(true,true));
-            }
             return new ServerDef(
                     name,
                     serverPort,
                     maxFrameSize,
                     queuedResponseLimit,
                     maxConnections,
-                    duplexProtocolFactory,
                     processor,
                     executor
             );

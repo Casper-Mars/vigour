@@ -15,7 +15,6 @@
  */
 package org.r.framework.thrift.server.core.server.netty.handler;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.AttributeKey;
@@ -31,9 +30,6 @@ import org.apache.thrift.protocol.TMessageType;
 import org.apache.thrift.protocol.TProtocol;
 import org.r.framework.thrift.common.netty.NettyTransport;
 import org.r.framework.thrift.common.netty.ThriftMessage;
-import org.r.framework.thrift.server.core.server.netty.core.TDuplexProtocolFactory;
-import org.r.framework.thrift.server.core.server.netty.core.TProtocolPair;
-import org.r.framework.thrift.server.core.server.netty.core.TTransportPair;
 import org.r.framework.thrift.server.core.wrapper.ServerDef;
 
 import java.util.HashMap;
@@ -72,11 +68,11 @@ public class MessageDispatcher extends ChannelInboundHandlerAdapter {
     private final Map<Integer, ThriftMessage> responseMap = new HashMap<>();
     private final AtomicInteger dispatcherSequenceId = new AtomicInteger(0);
     private final AtomicInteger lastResponseWrittenId = new AtomicInteger(0);
-    private final TDuplexProtocolFactory duplexProtocolFactory;
+//    private final TDuplexProtocolFactory duplexProtocolFactory;
 
     public MessageDispatcher(ServerDef def, Timer timer) {
         this.processor = def.getProcessor();
-        this.duplexProtocolFactory = def.getDuplexProtocolFactory();
+//        this.duplexProtocolFactory = def.getDuplexProtocolFactory();
         this.queuedResponseLimit = 16;
         this.exe = def.getExecutor();
         this.taskTimeoutMillis = (def.getTaskTimeout() == null ? 0 : 0);
@@ -184,20 +180,24 @@ public class MessageDispatcher extends ChannelInboundHandlerAdapter {
                                                     TApplicationException.INTERNAL_ERROR,
                                                     "Task timed out while executing."
                                             );
+                                            /*
+                                            * 原本是新建TProtocol的，就是注释的部分
+                                            * 发现注释的逻辑只是buffer获取的方式不一样
+                                            *
+                                            * */
                                             // Create a temporary transport to send the exception
-                                            ByteBuf duplicateBuffer = message.getBuffer().duplicate();
-                                            duplicateBuffer.resetReaderIndex();
-                                            NettyTransport temporaryTransport = new NettyTransport(
-                                                    ctx.channel(),
-                                                    duplicateBuffer,
-                                                    message.getTransportType());
-                                            TProtocolPair protocolPair = duplexProtocolFactory.getProtocolPair(
-                                                    TTransportPair.fromSingleTransport(temporaryTransport));
+//                                            ByteBuf duplicateBuffer = message.getBuffer().duplicate();
+//                                            duplicateBuffer.resetReaderIndex();
+//                                            NettyTransport temporaryTransport = new NettyTransport(
+//                                                    ctx.channel(),
+//                                                    duplicateBuffer,
+//                                                    message.getTransportType());
+//                                            TProtocol tp = new TBinaryProtocol(temporaryTransport);
                                             sendTApplicationException(ex, ctx, message,
                                                     requestSequenceId,
-                                                    temporaryTransport,
-                                                    protocolPair.getInputProtocol(),
-                                                    protocolPair.getOutputProtocol());
+                                                    messageTransport,
+                                                    inProtocol,
+                                                    outProtocol);
 //                                            sendTApplicationException(ex, ctx, message,
 //                                                    requestSequenceId,
 //                                                    temporaryTransport,
@@ -372,10 +372,6 @@ public class MessageDispatcher extends ChannelInboundHandlerAdapter {
              *
              * */
             NettyTransport messageTransport = new NettyTransport(ctx.channel(), message);
-            TTransportPair transportPair = TTransportPair.fromSingleTransport(messageTransport);
-            TProtocolPair protocolPair = duplexProtocolFactory.getProtocolPair(transportPair);
-            TProtocol inProtocol = protocolPair.getInputProtocol();
-            TProtocol outProtocol = protocolPair.getOutputProtocol();
             TProtocol tp = new TBinaryProtocol(messageTransport);
 
             processRequest(ctx, message, messageTransport, tp, tp);
