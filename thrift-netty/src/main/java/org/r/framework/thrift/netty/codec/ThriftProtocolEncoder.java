@@ -1,10 +1,11 @@
-package org.r.framework.thrift.common.netty;
+package org.r.framework.thrift.netty.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.handler.codec.TooLongFrameException;
+import org.r.framework.thrift.netty.ThriftMessage;
 
 /**
  * date 20-5-6 下午4:38
@@ -16,7 +17,12 @@ public class ThriftProtocolEncoder extends MessageToByteEncoder<ThriftMessage> {
 
     private final long maxFrameSize;
 
-    public ThriftProtocolEncoder(long maxFrameSize){
+    public ThriftProtocolEncoder() {
+        this.maxFrameSize = 64 * 1024 * 1024L;
+    }
+
+
+    public ThriftProtocolEncoder(long maxFrameSize) {
         this.maxFrameSize = maxFrameSize;
     }
 
@@ -24,17 +30,16 @@ public class ThriftProtocolEncoder extends MessageToByteEncoder<ThriftMessage> {
      * Encode a message into a {@link ByteBuf}. This method will be called for each written message that can be handled
      * by this encoder.
      *
-     * @param ctx the {@link ChannelHandlerContext} which this {@link MessageToByteEncoder} belongs to
+     * @param ctx     the {@link ChannelHandlerContext} which this {@link MessageToByteEncoder} belongs to
      * @param message the message to encode
-     * @param out the {@link ByteBuf} into which the encoded message will be written
+     * @param out     the {@link ByteBuf} into which the encoded message will be written
      * @throws Exception is thrown if an error occurs
      */
     @Override
     protected void encode(ChannelHandlerContext ctx, ThriftMessage message, ByteBuf out) throws Exception {
         int frameSize = message.getBuffer().readableBytes();
 
-        if (message.getBuffer().readableBytes() > maxFrameSize)
-        {
+        if (message.getBuffer().readableBytes() > maxFrameSize) {
             ctx.fireExceptionCaught(new TooLongFrameException(
                     String.format(
                             "Frame size exceeded on encode: frame was %d bytes, maximum allowed is %d bytes",

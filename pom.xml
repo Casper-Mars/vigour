@@ -17,6 +17,7 @@
         <module>thrift-common</module>
         <module>thrift-eureka</module>
         <module>thrift-server-core</module>
+        <module>thrift-netty</module>
     </modules>
     <packaging>pom</packaging>
 

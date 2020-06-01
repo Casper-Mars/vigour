@@ -1,4 +1,4 @@
-package org.r.framework.thrift.common.netty;
+package org.r.framework.thrift.netty.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -11,6 +11,9 @@ import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TProtocolUtil;
 import org.apache.thrift.protocol.TType;
 import org.apache.thrift.transport.TTransportException;
+import org.r.framework.thrift.netty.NettyTransport;
+import org.r.framework.thrift.netty.ThriftMessage;
+import org.r.framework.thrift.netty.ThriftTransportType;
 
 /**
  * 这里的原生的thrift消息类型分了了两种，一种是frame，一种是unframe。
@@ -30,6 +33,12 @@ public class ThriftProtocolDecoder extends ChannelInboundHandlerAdapter {
 
 
     private long maxFrameSize;
+
+
+    public ThriftProtocolDecoder() {
+        this.maxFrameSize = 64 * 1024 * 1024L;
+    }
+
 
     public ThriftProtocolDecoder(long maxFrameSize) {
         this.maxFrameSize = maxFrameSize;
@@ -81,9 +90,9 @@ public class ThriftProtocolDecoder extends ChannelInboundHandlerAdapter {
         int messageContentsOffset;
 
         /*
-        * 第一个可读位置的4个字节代表的整形数是指这个frame的大小，这个4个字节不应该计算在数据中，应该排除出来。
-        * 所以消息数据的开始位置是第一个可读位置偏移4个字节
-        * */
+         * 第一个可读位置的4个字节代表的整形数是指这个frame的大小，这个4个字节不应该计算在数据中，应该排除出来。
+         * 所以消息数据的开始位置是第一个可读位置偏移4个字节
+         * */
         messageContentsOffset = messageStartReaderIndex + MESSAGE_FRAME_SIZE;
 
         /*这个消息的大小是有效消息大小和有效消息大小指示量的大小之和，单位值字节*/
@@ -118,7 +127,7 @@ public class ThriftProtocolDecoder extends ChannelInboundHandlerAdapter {
     protected ByteBuf tryDecodeUnframedMessage(ChannelHandlerContext ctx,
                                                Channel channel,
                                                ByteBuf buffer
-                                               )
+    )
             throws TException {
         // Perform a trial decode, skipping through
         // the fields, to see whether we have an entire message available.

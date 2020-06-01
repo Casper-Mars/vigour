@@ -2,14 +2,10 @@ package org.r.framework.thrift.server.core.server;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import org.r.framework.thrift.common.netty.ThriftProtocolDecoder;
-import org.r.framework.thrift.common.netty.ThriftProtocolEncoder;
+import org.r.framework.thrift.netty.ThriftChannelInitializer;
 import org.r.framework.thrift.server.core.server.netty.handler.ConnectHandler;
 import org.r.framework.thrift.server.core.server.netty.handler.MessageDispatcher;
 import org.r.framework.thrift.server.core.wrapper.ServerDef;
@@ -29,16 +25,10 @@ public class NettyServer implements ServerDelegate {
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(bossGroup, workGroup).channel(NioServerSocketChannel.class);
         bootstrap.localAddress(serverDef.getServerPort());
-        bootstrap.childHandler(new ChannelInitializer<SocketChannel>() {
-            @Override
-            protected void initChannel(SocketChannel socketChannel) throws Exception {
-                ChannelPipeline cp = socketChannel.pipeline();
-                cp.addLast(ConnectHandler.class.getSimpleName(),new ConnectHandler());
-                cp.addLast(ThriftProtocolDecoder.class.getSimpleName(), new ThriftProtocolDecoder(serverDef.getMaxFrameSize()));
-                cp.addLast(ThriftProtocolEncoder.class.getSimpleName(), new ThriftProtocolEncoder(serverDef.getMaxFrameSize()));
-                cp.addLast(MessageDispatcher.class.getSimpleName(), new MessageDispatcher(serverDef, null));
-            }
-        });
+        ThriftChannelInitializer channelInitializer  = new ThriftChannelInitializer();
+        channelInitializer.addLast(ConnectHandler.class.getSimpleName(),new ConnectHandler());
+        channelInitializer.addLast(MessageDispatcher.class.getSimpleName(),new MessageDispatcher(serverDef));
+        bootstrap.childHandler(channelInitializer);
 
         try {
             ChannelFuture sync = bootstrap.bind().sync();

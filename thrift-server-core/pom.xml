@@ -13,12 +13,18 @@
     <version>1.0</version>
     <properties>
         <thrift-common.version>1.0</thrift-common.version>
+        <thrift-netty.version>1.0</thrift-netty.version>
     </properties>
     <dependencies>
         <dependency>
             <groupId>org.r.framework</groupId>
             <artifactId>thrift-common</artifactId>
             <version>${thrift-common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.r.framework</groupId>
+            <artifactId>thrift-netty</artifactId>
+            <version>${thrift-netty.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

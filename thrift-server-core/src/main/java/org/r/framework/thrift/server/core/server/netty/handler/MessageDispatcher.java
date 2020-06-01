@@ -19,8 +19,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.AttributeKey;
 import io.netty.util.Timeout;
-import io.netty.util.Timer;
-import io.netty.util.TimerTask;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
@@ -28,15 +26,14 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TMessage;
 import org.apache.thrift.protocol.TMessageType;
 import org.apache.thrift.protocol.TProtocol;
-import org.r.framework.thrift.common.netty.NettyTransport;
-import org.r.framework.thrift.common.netty.ThriftMessage;
+import org.r.framework.thrift.netty.NettyTransport;
+import org.r.framework.thrift.netty.ThriftMessage;
 import org.r.framework.thrift.server.core.wrapper.ServerDef;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -61,23 +58,15 @@ public class MessageDispatcher extends ChannelInboundHandlerAdapter {
 
     private final TProcessor processor;
     private final Executor exe;
-    private final long taskTimeoutMillis;
-    private final Timer taskTimeoutTimer;
-    private final long queueTimeoutMillis;
     private final int queuedResponseLimit;
     private final Map<Integer, ThriftMessage> responseMap = new HashMap<>();
     private final AtomicInteger dispatcherSequenceId = new AtomicInteger(0);
     private final AtomicInteger lastResponseWrittenId = new AtomicInteger(0);
-//    private final TDuplexProtocolFactory duplexProtocolFactory;
 
-    public MessageDispatcher(ServerDef def, Timer timer) {
+    public MessageDispatcher(ServerDef def) {
         this.processor = def.getProcessor();
-//        this.duplexProtocolFactory = def.getDuplexProtocolFactory();
         this.queuedResponseLimit = 16;
         this.exe = def.getExecutor();
-        this.taskTimeoutMillis = (def.getTaskTimeout() == null ? 0 : 0);
-        this.taskTimeoutTimer = (def.getTaskTimeout() == null ? null : timer);
-        this.queueTimeoutMillis = (def.getQueueTimeout() == null ? 0 : 0);
     }
 
 
@@ -134,94 +123,10 @@ public class MessageDispatcher extends ChannelInboundHandlerAdapter {
 
                     try {
                         try {
-                            /*检查有没有超时*/
-                            long timeRemaining = 0;
-                            long timeElapsed = System.currentTimeMillis() - message.getProcessStartTimeMillis();
-                            /*检查队列等待时间*/
-                            if (queueTimeoutMillis > 0) {
-                                if (timeElapsed >= queueTimeoutMillis) {
-                                    TApplicationException taskTimeoutException = new TApplicationException(
-                                            TApplicationException.INTERNAL_ERROR,
-                                            "Task stayed on the queue for " + timeElapsed +
-                                                    " milliseconds, exceeding configured queue timeout of " + queueTimeoutMillis +
-                                                    " milliseconds."
-                                    );
-                                    sendTApplicationException(taskTimeoutException, ctx, message, requestSequenceId, messageTransport,
-                                            inProtocol, outProtocol);
-                                    return;
-                                }
-                            }
-                            /*检查任务执行时间*/
-                            else if (taskTimeoutMillis > 0) {
-                                if (timeElapsed >= taskTimeoutMillis) {
-                                    TApplicationException taskTimeoutException = new TApplicationException(
-                                            TApplicationException.INTERNAL_ERROR,
-                                            "Task stayed on the queue for " + timeElapsed +
-                                                    " milliseconds, exceeding configured task timeout of " + taskTimeoutMillis +
-                                                    " milliseconds."
-                                    );
-                                    sendTApplicationException(taskTimeoutException, ctx, message, requestSequenceId, messageTransport,
-                                            inProtocol, outProtocol);
-                                    return;
-                                } else {
-                                    timeRemaining = taskTimeoutMillis - timeElapsed;
-                                }
-                            }
-                            /*如果都没有超时，则执行如下的逻辑*/
-                            if (timeRemaining > 0) {
-                                /*设置任务超时的处理*/
-                                expireTimeout.set(taskTimeoutTimer.newTimeout(new TimerTask() {
-                                    @Override
-                                    public void run(Timeout timeout) throws Exception {
-                                        // The immediateFuture returned by processors isn't cancellable, cancel() and
-                                        // isCanceled() always return false. Use a flag to detect task expiration.
-                                        if (responseSent.compareAndSet(false, true)) {
-                                            TApplicationException ex = new TApplicationException(
-                                                    TApplicationException.INTERNAL_ERROR,
-                                                    "Task timed out while executing."
-                                            );
-                                            /*
-                                            * 原本是新建TProtocol的，就是注释的部分
-                                            * 发现注释的逻辑只是buffer获取的方式不一样
-                                            *
-                                            * */
-                                            // Create a temporary transport to send the exception
-//                                            ByteBuf duplicateBuffer = message.getBuffer().duplicate();
-//                                            duplicateBuffer.resetReaderIndex();
-//                                            NettyTransport temporaryTransport = new NettyTransport(
-//                                                    ctx.channel(),
-//                                                    duplicateBuffer,
-//                                                    message.getTransportType());
-//                                            TProtocol tp = new TBinaryProtocol(temporaryTransport);
-                                            sendTApplicationException(ex, ctx, message,
-                                                    requestSequenceId,
-                                                    messageTransport,
-                                                    inProtocol,
-                                                    outProtocol);
-//                                            sendTApplicationException(ex, ctx, message,
-//                                                    requestSequenceId,
-//                                                    temporaryTransport,
-//                                                    protocol,
-//                                                    protocol);
-                                        }
-                                    }
-                                }, timeRemaining, TimeUnit.MILLISECONDS));
-                            }
-                            /*上面一大坨代码都是检查超时的问题，下面的4行才是处理业务*/
-//                            ConnectionContext connectionContext = ConnectionContexts.getContext(ctx.getChannel());
-//                            RequestContext requestContext = new NiftyRequestContext(connectionContext, inProtocol, outProtocol, messageTransport);
-//                            RequestContexts.setCurrentContext(requestContext);
                             if (processor != null) {
                                 processor.process(inProtocol, outProtocol);
                             }
-//                            processFuture = processorFactory.getProcessor(messageTransport).process(inProtocol, outProtocol, requestContext);
                         } finally {
-                            // RequestContext does NOT stay set while we are waiting for the process
-                            // future to complete. This is by design because we'll might move on to the
-                            // next request using this thread before this one is completed. If you need
-                            // the context throughout an asynchronous handler, you need to read and store
-                            // it before returning a future.
-//                            RequestContexts.clearCurrentContext();
                         }
                         /*上面的代码使用了线程，此处设置线程完成后的回调，把处理好的数据写回到数据链中，实现了io/业务分离*/
                         deleteExpirationTimer(expireTimeout.get());

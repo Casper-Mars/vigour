@@ -55,6 +55,7 @@
 ### netty 框架
 
 服务端采用了netty框架作为通讯框架。
+客户端也可以采用了netty作为通讯框架。
 
 ### cglib 动态代理
 
@@ -101,9 +102,18 @@
 
 > 实现了服务提供的功能，并实时刷新服务。![avatar][client-eureka-image]
 
+* 结合netty
+
+> thrift框架和netty框架结合。需要理解thrift的架构是怎样的，在那个点的功能可以由netty进行代理。
+经过粗糙的理解，thrift定义了transport的概念负责底层的socket操作的，从这个点出发，用netty进行代理transport就可以实现结合两个框架
 
 
 
 
 [client-core-image]:./info/client-core.png
 [client-eureka-image]:./info/client-eureka.png
+
+
+
+
+
