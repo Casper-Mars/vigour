@@ -29,7 +29,11 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TMessage;
 import org.apache.thrift.protocol.TMessageType;
 import org.apache.thrift.protocol.TProtocol;
-import org.r.framework.thrift.server.core.server.netty.core.*;
+import org.r.framework.thrift.common.netty.NettyTransport;
+import org.r.framework.thrift.common.netty.ThriftMessage;
+import org.r.framework.thrift.server.core.server.netty.core.TDuplexProtocolFactory;
+import org.r.framework.thrift.server.core.server.netty.core.TProtocolPair;
+import org.r.framework.thrift.server.core.server.netty.core.TTransportPair;
 import org.r.framework.thrift.server.core.wrapper.ServerDef;
 
 import java.util.HashMap;
@@ -100,7 +104,7 @@ public class MessageDispatcher extends ChannelInboundHandlerAdapter {
     private void processRequest(
             final ChannelHandlerContext ctx,
             final ThriftMessage message,
-            final DefaultTransport messageTransport,
+            final NettyTransport messageTransport,
             final TProtocol inProtocol,
             final TProtocol outProtocol) {
         // Remember the ordering of requests as they arrive, used to enforce an order on the
@@ -183,7 +187,7 @@ public class MessageDispatcher extends ChannelInboundHandlerAdapter {
                                             // Create a temporary transport to send the exception
                                             ByteBuf duplicateBuffer = message.getBuffer().duplicate();
                                             duplicateBuffer.resetReaderIndex();
-                                            DefaultTransport temporaryTransport = new DefaultTransport(
+                                            NettyTransport temporaryTransport = new NettyTransport(
                                                     ctx.channel(),
                                                     duplicateBuffer,
                                                     message.getTransportType());
@@ -259,7 +263,7 @@ public class MessageDispatcher extends ChannelInboundHandlerAdapter {
             ChannelHandlerContext ctx,
             ThriftMessage request,
             int responseSequenceId,
-            DefaultTransport requestTransport,
+            NettyTransport requestTransport,
             TProtocol inProtocol,
             TProtocol outProtocol) {
         if (ctx.channel().isActive()) {
@@ -367,7 +371,7 @@ public class MessageDispatcher extends ChannelInboundHandlerAdapter {
              * 以下的代码是fb的处理代码。包括了把数据链中的数据封装到protocol中，具体怎样实现还未研究出来
              *
              * */
-            DefaultTransport messageTransport = new DefaultTransport(ctx.channel(), message);
+            NettyTransport messageTransport = new NettyTransport(ctx.channel(), message);
             TTransportPair transportPair = TTransportPair.fromSingleTransport(messageTransport);
             TProtocolPair protocolPair = duplexProtocolFactory.getProtocolPair(transportPair);
             TProtocol inProtocol = protocolPair.getInputProtocol();

@@ -15,6 +15,7 @@ import org.apache.thrift.transport.TTransportException;
 public class NettyTransport extends TTransport {
     private final Channel channel;
     private final ByteBuf in;
+    private final ThriftTransportType thriftTransportType;
     private ByteBuf out;
     private static final int DEFAULT_OUTPUT_BUFFER_SIZE = 1024;
     private final int initialReaderIndex;
@@ -25,10 +26,12 @@ public class NettyTransport extends TTransport {
     private TApplicationException tApplicationException;
 
     public NettyTransport(Channel channel,
-                            ByteBuf in)
+                            ByteBuf in,
+                            ThriftTransportType thriftTransportType)
     {
         this.channel = channel;
         this.in = in;
+        this.thriftTransportType = thriftTransportType;
         this.out = PooledByteBufAllocator.DEFAULT.buffer(DEFAULT_OUTPUT_BUFFER_SIZE);
         this.initialReaderIndex = in.readerIndex();
 
@@ -51,7 +54,7 @@ public class NettyTransport extends TTransport {
 
     public NettyTransport(Channel channel, ThriftMessage message)
     {
-        this(channel, message.getBuffer());
+        this(channel, message.getBuffer(), message.getTransportType());
     }
 
     @Override
@@ -115,6 +118,10 @@ public class NettyTransport extends TTransport {
         out = buf;
     }
 
+    public ThriftTransportType getTransportType() {
+        return thriftTransportType;
+    }
+
     @Override
     public void flush()
             throws TTransportException
@@ -170,5 +177,4 @@ public class NettyTransport extends TTransport {
     public TApplicationException getTApplicationException() {
         return tApplicationException;
     }
-
 }

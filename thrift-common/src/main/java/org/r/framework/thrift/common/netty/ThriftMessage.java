@@ -21,11 +21,13 @@ import io.netty.buffer.ByteBuf;
 public class ThriftMessage
 {
     private final ByteBuf buffer;
+    private final ThriftTransportType transportType;
     private long processStartTimeMillis;
 
-    public ThriftMessage(ByteBuf buffer)
+    public ThriftMessage(ByteBuf buffer, ThriftTransportType transportType)
     {
         this.buffer = buffer;
+        this.transportType = transportType;
     }
 
     public ByteBuf getBuffer()
@@ -33,17 +35,18 @@ public class ThriftMessage
         return buffer;
     }
 
+    public ThriftTransportType getTransportType()
+    {
+        return transportType;
+    }
 
     /**
-     * Gets a {@link Factory} for creating messages similar to this one. Used by {@link
-     * MessageDispatcher} to create response messages that are similar to their corresponding
-     * request messages.
-     *
-     * @return The {@link Factory}
+     * 获取构建消息体的工厂，工厂负责产生和此消息的传输类型一样的消息体
+     * @return
      */
     public Factory getMessageFactory()
     {
-        return ThriftMessage::new;
+        return messageBuffer -> new ThriftMessage(messageBuffer, getTransportType());
     }
 
     /**

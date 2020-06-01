@@ -5,7 +5,7 @@ import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.handler.codec.TooLongFrameException;
-import org.r.framework.thrift.server.core.server.netty.core.ThriftMessage;
+import org.r.framework.thrift.common.netty.ThriftMessage;
 
 /**
  * date 20-5-6 下午4:38
@@ -54,12 +54,6 @@ public class ThriftProtocolEncoder extends MessageToByteEncoder<ThriftMessage> {
                 frameSizeBuffer.writeInt(message.getBuffer().readableBytes());
                 out.writeBytes(frameSizeBuffer);
                 out.writeBytes(message.getBuffer());
-
-            case HEADER:
-                throw new UnsupportedOperationException("Header transport is not supported");
-
-            case HTTP:
-                throw new UnsupportedOperationException("HTTP transport is not supported");
 
             default:
                 throw new UnsupportedOperationException("Unrecognized transport type");

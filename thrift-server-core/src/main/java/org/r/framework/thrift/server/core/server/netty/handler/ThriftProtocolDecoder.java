@@ -11,9 +11,9 @@ import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.protocol.TProtocolUtil;
 import org.apache.thrift.protocol.TType;
 import org.apache.thrift.transport.TTransportException;
-import org.r.framework.thrift.server.core.server.netty.core.DefaultTransport;
-import org.r.framework.thrift.server.core.server.netty.core.ThriftMessage;
-import org.r.framework.thrift.server.core.server.netty.core.ThriftTransportType;
+import org.r.framework.thrift.common.netty.NettyTransport;
+import org.r.framework.thrift.common.netty.ThriftMessage;
+import org.r.framework.thrift.common.netty.ThriftTransportType;
 
 /**
  * 这里的原生的thrift消息类型分了了两种，一种是frame，一种是unframe。
@@ -53,6 +53,7 @@ public class ThriftProtocolDecoder extends ChannelInboundHandlerAdapter {
             /*获取buffer的第一个16位无符号整形数作为判断的标志位*/
             short firstByte = buffer.getUnsignedByte(0);
             /*如果标志位大于等于128，则buffer的数据是原生的thrift请求。否则，是经过netty封装的数据*/
+
             if (firstByte >= 0x80) {
                 ByteBuf messageBuffer = tryDecodeUnframedMessage(ctx, ctx.channel(), buffer, inputProtocolFactory);
                 if (messageBuffer != null) {
@@ -131,8 +132,8 @@ public class ThriftProtocolDecoder extends ChannelInboundHandlerAdapter {
         int messageStartReaderIndex = buffer.readerIndex();
 
         try {
-            DefaultTransport decodeAttemptTransport =
-                    new DefaultTransport(channel, buffer, ThriftTransportType.UNFRAMED);
+            NettyTransport decodeAttemptTransport =
+                    new NettyTransport(channel, buffer, ThriftTransportType.UNFRAMED);
             int initialReadBytes = decodeAttemptTransport.getReadByteCount();
             TProtocol inputProtocol =
                     inputProtocolFactory.getProtocol(decodeAttemptTransport);

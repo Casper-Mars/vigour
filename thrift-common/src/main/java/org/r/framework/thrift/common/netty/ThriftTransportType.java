@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.r.framework.thrift.server.core.server.netty.core;
+package org.r.framework.thrift.common.netty;
 
 public enum ThriftTransportType {
+
+    /**
+     * 数据包的类型，区分unframed和framed的作用是为了兼容原生的thrift客户端和经过netty封装的thrift客户端
+     * 在接收数据的时候判断出来，并记录在对应的消息中，以便在响应的时候做响应的逻辑
+     */
     UNFRAMED,
-    FRAMED,
-    HTTP,
-    HEADER
+    FRAMED
 }
