@@ -1,7 +1,7 @@
 package org.r.framework.thrift.client.core;
 
 import org.r.framework.thrift.client.core.manager.ClientManager;
-import org.r.framework.thrift.client.core.thread.ClientExecutor;
+import org.r.framework.thrift.client.core.thread.ServerExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cglib.proxy.MethodInterceptor;
@@ -36,7 +36,7 @@ public class ProxyClient implements MethodInterceptor {
     @Override
     public Object intercept(Object o, Method method, Object[] objects, MethodProxy methodProxy) throws Throwable {
         Object result = null;
-        ClientExecutor client = manager.buildClient(serverName, serviceClass);
+        ServerExecutor client = manager.buildClient(serverName, serviceClass);
         if (client == null && fallback == null) {
             throw new RuntimeException("no client for this server:" + serverName);
         }

@@ -3,7 +3,7 @@ package org.r.framework.thrift.client.core.manager;
 import org.r.framework.thrift.client.core.factory.ProtocolFactory;
 import org.r.framework.thrift.client.core.observer.ServiceObserver;
 import org.r.framework.thrift.client.core.provider.ServiceInfoProvider;
-import org.r.framework.thrift.client.core.thread.ClientExecutor;
+import org.r.framework.thrift.client.core.thread.ServerExecutor;
 import org.r.framework.thrift.client.core.wrapper.ServerWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,9 +94,9 @@ public class ClientManager implements ServiceObserver {
         }
     }
 
-    public ClientExecutor buildClient(String serverName, Class<?> serverClass) {
+    public ServerExecutor buildClient(String serverName, Class<?> serverClass) {
         ServerManager manager = serverManagerMap.get(serverName);
-        ClientExecutor client = null;
+        ServerExecutor client = null;
         if (manager != null) {
             client = manager.getClient(serverClass);
         }

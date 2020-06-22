@@ -3,7 +3,7 @@ package org.r.framework.thrift.client.core.manager;
 import org.r.framework.thrift.client.core.exception.TransportFailException;
 import org.r.framework.thrift.client.core.factory.ServerFactory;
 import org.r.framework.thrift.client.core.factory.ProtocolFactory;
-import org.r.framework.thrift.client.core.thread.ClientExecutor;
+import org.r.framework.thrift.client.core.thread.ServerExecutor;
 import org.r.framework.thrift.client.core.wrapper.TransportWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,12 +114,12 @@ public class ServerManager implements Function<TransportWrapper, Boolean> {
      * @param thriftClientClass thrift原生实现的客户端类的class
      * @return
      */
-    public ClientExecutor getClient(Class<?> thriftClientClass) {
+    public ServerExecutor getClient(Class<?> thriftClientClass) {
         ServerFactory serverFactory = getClientFactory();
         if(serverFactory ==null){
             return null;
         }
-        ClientExecutor target = null;
+        ServerExecutor target = null;
         try {
             target = serverFactory.getClient(thriftClientClass);
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
