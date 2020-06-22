@@ -29,6 +29,7 @@
         <libthrift.version>0.13.0</libthrift.version>
         <netty.version>4.1.49.Final</netty.version>
         <fastjson.version>1.2.31</fastjson.version>
+        <guava.version>29.0-jre</guava.version>
     </properties>
 
     <dependencyManagement>
@@ -53,7 +54,7 @@
             </dependency>
             <!--netty-->
             <dependency>
-                <groupId>io.netty</groupId>
+                <groupId>io.29.0-jrenetty</groupId>
                 <artifactId>netty-all</artifactId>
                 <version>${netty.version}</version>
             </dependency>
@@ -63,7 +64,12 @@
                 <artifactId>fastjson</artifactId>
                 <version>${fastjson.version}</version>
             </dependency>
-
+            <!--guava-->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
             <!--自家项目-->
             <dependency>
                 <groupId>org.r.framework</groupId>
