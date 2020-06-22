@@ -9,8 +9,7 @@ import org.apache.thrift.protocol.TMessage;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
-import org.r.framework.thrift.client.core.bridge.BlockingNettyThriftBridge;
-import org.r.framework.thrift.client.core.bridge.NettyThriftBridge;
+import org.r.framework.thrift.client.core.bridge.ThriftRequest;
 
 /**
  * 实际上认为netty的channel对应thrift的transport
@@ -26,11 +25,11 @@ public class NettyTransportAdapter extends TTransport {
 
     private final Channel channel;
     private ByteBuf responedBuf;
-    private final NettyThriftBridge<ByteBuf> bridge;
+    private final ThriftRequest bridge;
 
     public NettyTransportAdapter(Channel channel) {
         this.channel = channel;
-        bridge = new BlockingNettyThriftBridge<>();
+        bridge = new ThriftRequest();
     }
 
     /**
