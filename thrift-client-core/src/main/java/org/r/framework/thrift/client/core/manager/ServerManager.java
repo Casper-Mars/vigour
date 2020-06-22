@@ -1,7 +1,7 @@
 package org.r.framework.thrift.client.core.manager;
 
 import org.r.framework.thrift.client.core.exception.TransportFailException;
-import org.r.framework.thrift.client.core.factory.ClientFactory;
+import org.r.framework.thrift.client.core.factory.ServerFactory;
 import org.r.framework.thrift.client.core.factory.ProtocolFactory;
 import org.r.framework.thrift.client.core.thread.ClientExecutor;
 import org.r.framework.thrift.client.core.wrapper.TransportWrapper;
@@ -44,7 +44,7 @@ public class ServerManager implements Function<TransportWrapper, Boolean> {
     /**
      * 客户端列表
      */
-    private final List<ClientFactory> clientList;
+    private final List<ServerFactory> clientList;
 
     /**
      * 用于指示服务使用的底层socket，避免重复添加
@@ -103,7 +103,7 @@ public class ServerManager implements Function<TransportWrapper, Boolean> {
             return;
         }
         transportsSet.add(transport);
-        ClientFactory factory = new ClientFactory(this.name, transport, protocolFactory);
+        ServerFactory factory = new ServerFactory(this.name, transport, protocolFactory);
         clientList.add(factory);
     }
 
@@ -115,13 +115,13 @@ public class ServerManager implements Function<TransportWrapper, Boolean> {
      * @return
      */
     public ClientExecutor getClient(Class<?> thriftClientClass) {
-        ClientFactory clientFactory = getClientFactory();
-        if(clientFactory ==null){
+        ServerFactory serverFactory = getClientFactory();
+        if(serverFactory ==null){
             return null;
         }
         ClientExecutor target = null;
         try {
-            target = clientFactory.getClient(thriftClientClass);
+            target = serverFactory.getClient(thriftClientClass);
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
             e.printStackTrace();
         }
@@ -134,13 +134,13 @@ public class ServerManager implements Function<TransportWrapper, Boolean> {
      *
      * @return
      */
-    private ClientFactory getClientFactory() {
+    private ServerFactory getClientFactory() {
         if(clientList.isEmpty()){
             return null;
         }
         int i = counter.incrementAndGet();
         int index = i % clientList.size();
-        ClientFactory target = clientList.get(index);
+        ServerFactory target = clientList.get(index);
         if (i >= clientList.size()) {
             synchronized (this) {
                 i = counter.get();

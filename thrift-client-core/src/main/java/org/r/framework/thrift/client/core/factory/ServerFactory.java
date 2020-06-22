@@ -12,7 +12,7 @@ import java.lang.reflect.InvocationTargetException;
  *
  * @author casper
  */
-public class ClientFactory {
+public class ServerFactory {
 
     private final TransportWrapper transportWrapper;
     private final ProtocolFactory protocolFactory;
@@ -20,7 +20,7 @@ public class ClientFactory {
 
     private volatile ClientExecutor client;
 
-    public ClientFactory(String serverName, TransportWrapper transport, ProtocolFactory protocolFactory) {
+    public ServerFactory(String serverName, TransportWrapper transport, ProtocolFactory protocolFactory) {
         this.transportWrapper = transport;
         this.serverName = serverName;
         this.protocolFactory = protocolFactory;
