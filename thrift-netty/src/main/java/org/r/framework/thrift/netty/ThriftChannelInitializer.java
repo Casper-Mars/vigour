@@ -1,9 +1,9 @@
 package org.r.framework.thrift.netty;
 
 import io.netty.channel.*;
+import org.r.framework.thrift.common.util.CollectionUtils;
 import org.r.framework.thrift.netty.codec.ThriftProtocolDecoder;
 import org.r.framework.thrift.netty.codec.ThriftProtocolEncoder;
-import org.springframework.util.CollectionUtils;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -45,7 +45,7 @@ public class ThriftChannelInitializer extends ChannelInitializer {
         ch.pipeline()
                 .addLast("thriftDecoder", new ThriftProtocolDecoder(maxFrameSize))
                 .addLast("thriftEncoder", new ThriftProtocolEncoder(maxFrameSize));
-        if (!CollectionUtils.isEmpty(handlerList)) {
+        if (CollectionUtils.isNotEmpty(handlerList)) {
             for (ChannelHandlerWrapper wrapper : handlerList) {
                 ch.pipeline().addLast(wrapper.getName(), wrapper.getHandler());
             }
