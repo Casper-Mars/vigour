@@ -12,31 +12,16 @@
     <artifactId>thrift-client-core</artifactId>
     <version>1.0</version>
 
-    <properties>
-        <thrift-common.version>1.0</thrift-common.version>
-        <thrift-netty.version>1.0</thrift-netty.version>
-        <rxjava.version>2.2.19</rxjava.version>
-    </properties>
-
     <dependencies>
         <!--项目的公共依赖-->
         <dependency>
             <groupId>org.r.framework</groupId>
             <artifactId>thrift-common</artifactId>
-            <version>${thrift-common.version}</version>
         </dependency>
         <dependency>
             <groupId>org.r.framework</groupId>
             <artifactId>thrift-netty</artifactId>
-            <version>${thrift-netty.version}</version>
         </dependency>
-
-        <!--响应式编程依赖-->
-<!--        <dependency>-->
-<!--            <groupId>io.reactivex.rxjava2</groupId>-->
-<!--            <artifactId>rxjava</artifactId>-->
-<!--            <version>${rxjava.version}</version>-->
-<!--        </dependency>-->
 
         <!--springboot依赖-->
         <dependency>
