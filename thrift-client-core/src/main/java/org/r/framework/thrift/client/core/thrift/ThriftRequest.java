@@ -1,4 +1,4 @@
-package org.r.framework.thrift.client.core.bridge;
+package org.r.framework.thrift.client.core.thrift;
 
 import com.google.common.util.concurrent.SettableFuture;
 import io.netty.buffer.ByteBuf;

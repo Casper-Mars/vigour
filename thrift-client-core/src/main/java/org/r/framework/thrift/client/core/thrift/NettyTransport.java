@@ -1,15 +1,12 @@
-package org.r.framework.thrift.client.core;
+package org.r.framework.thrift.client.core.thrift;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.Channel;
-import org.apache.thrift.TException;
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.protocol.TMessage;
-import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
-import org.r.framework.thrift.client.core.bridge.ThriftRequest;
+import org.r.framework.thrift.client.core.channel.ThriftNettyChannel;
+
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * 实际上认为netty的channel对应thrift的transport
@@ -20,16 +17,18 @@ import org.r.framework.thrift.client.core.bridge.ThriftRequest;
  *
  * @author casper
  **/
-public class NettyTransportAdapter extends TTransport {
+public class NettyTransport extends TTransport {
 
 
-    private final Channel channel;
-    private ByteBuf responedBuf;
-    private final ThriftRequest bridge;
+    private final ThriftNettyChannel channel;
+    private ByteBuf respondBuf;
+    private final LinkedBlockingQueue<ThriftRequest> requestQueue;
+    private final ByteBuf innerBuffer;
 
-    public NettyTransportAdapter(Channel channel) {
+    public NettyTransport(ThriftNettyChannel channel) {
         this.channel = channel;
-        bridge = new ThriftRequest();
+        requestQueue = new LinkedBlockingQueue<>();
+        innerBuffer = Unpooled.buffer();
     }
 
     /**
@@ -57,11 +56,6 @@ public class NettyTransportAdapter extends TTransport {
      */
     @Override
     public void close() {
-        try {
-            channel.closeFuture().sync();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -76,12 +70,17 @@ public class NettyTransportAdapter extends TTransport {
     @Override
     public int read(byte[] buf, int off, int len) throws TTransportException {
 
-        if (!responedBuf.isReadable()) {
-            responedBuf = bridge.get();
+        if (!respondBuf.isReadable()) {
+            try {
+                ThriftRequest poll = requestQueue.take();
+                respondBuf = poll.get();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         /*读取前获取读的指针位置*/
-        int before = responedBuf.readerIndex();
-        ByteBuf tmp = responedBuf.readBytes(buf, off, len);
+        int before = respondBuf.readerIndex();
+        ByteBuf tmp = respondBuf.readBytes(buf, off, len);
         /*读取后获取读的指针位置*/
         int after = tmp.readerIndex();
         /*返回读取的字节数*/
@@ -110,27 +109,14 @@ public class NettyTransportAdapter extends TTransport {
     @Override
     public void flush() throws TTransportException {
 
-        int seqId = getSeqId(this.responedBuf);
-
-
-
-        channel.flush();
-    }
-
-
-    private int getSeqId(ByteBuf byteBuf) {
         try {
-            byteBuf.markReaderIndex();
-            TTransport tmpTransport = new ByteBufTransport(byteBuf);
-            TProtocol inputProtocol = new TBinaryProtocol(tmpTransport);
-            TMessage message = inputProtocol.readMessageBegin();
-            byteBuf.resetReaderIndex();
-            return message.seqid;
-        } catch (TException e) {
+            ThriftRequest thriftRequest = channel.sendMsg(innerBuffer.copy());
+            requestQueue.add(thriftRequest);
+        } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException("Could not find sequenceId in Thrift message", e);
         }
+        innerBuffer.resetWriterIndex();
+        innerBuffer.resetReaderIndex();
     }
-
 
 }

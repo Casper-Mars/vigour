@@ -3,7 +3,7 @@ package org.r.framework.thrift.client.core.manager;
 import org.r.framework.thrift.client.core.factory.ProtocolFactory;
 import org.r.framework.thrift.client.core.observer.ServiceObserver;
 import org.r.framework.thrift.client.core.provider.ServiceInfoProvider;
-import org.r.framework.thrift.client.core.thread.ServerExecutor;
+import org.r.framework.thrift.client.core.thread.ServerProxy;
 import org.r.framework.thrift.client.core.wrapper.ServerWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +28,7 @@ public class ClientManager implements ServiceObserver {
     /**
      * 服务列表
      */
-    private final Map<String, ServerManager> serverManagerMap;
+    private final Map<String, ServerManagerImpl> serverManagerMap;
     /**
      * 底层socket管理器，用于多个service复用同一个socket，降低系统的开销
      */
@@ -84,19 +84,19 @@ public class ClientManager implements ServiceObserver {
                 transportManager.deleteTransport(serverWrapper.getHost(), serverWrapper.getPort());
             } else {
                 log.info("server:{}[{}:{}] is up", serverWrapper.getName(), serverWrapper.getHost(), serverWrapper.getPort());
-                ServerManager serverManager = serverManagerMap.get(serverWrapper.getName());
-                if (serverManager == null) {
-                    serverManager = new ServerManager(serverWrapper.getName(), this.transportManager, this.protocolFactory);
-                    serverManagerMap.put(serverWrapper.getName(), serverManager);
+                ServerManagerImpl serverManagerImpl = serverManagerMap.get(serverWrapper.getName());
+                if (serverManagerImpl == null) {
+                    serverManagerImpl = new ServerManagerImpl(serverWrapper.getName(), this.transportManager, this.protocolFactory);
+                    serverManagerMap.put(serverWrapper.getName(), serverManagerImpl);
                 }
-                serverManager.registryClient(serverWrapper.getHost(), serverWrapper.getPort());
+                serverManagerImpl.registryClient(serverWrapper.getHost(), serverWrapper.getPort());
             }
         }
     }
 
-    public ServerExecutor buildClient(String serverName, Class<?> serverClass) {
-        ServerManager manager = serverManagerMap.get(serverName);
-        ServerExecutor client = null;
+    public ServerProxy buildClient(String serverName, Class<?> serverClass) {
+        ServerManagerImpl manager = serverManagerMap.get(serverName);
+        ServerProxy client = null;
         if (manager != null) {
             client = manager.getClient(serverClass);
         }

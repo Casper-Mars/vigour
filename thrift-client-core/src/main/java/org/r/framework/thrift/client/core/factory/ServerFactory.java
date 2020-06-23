@@ -1,7 +1,7 @@
 package org.r.framework.thrift.client.core.factory;
 
 import org.apache.thrift.protocol.TProtocol;
-import org.r.framework.thrift.client.core.thread.ServerExecutor;
+import org.r.framework.thrift.client.core.thread.ServerProxy;
 import org.r.framework.thrift.client.core.wrapper.TransportWrapper;
 
 import java.lang.reflect.Constructor;
@@ -18,7 +18,7 @@ public class ServerFactory {
     private final ProtocolFactory protocolFactory;
     private final String serverName;
 
-    private volatile ServerExecutor client;
+    private volatile ServerProxy client;
 
     public ServerFactory(String serverName, TransportWrapper transport, ProtocolFactory protocolFactory) {
         this.transportWrapper = transport;
@@ -35,14 +35,14 @@ public class ServerFactory {
      * @throws InvocationTargetException
      * @throws InstantiationException
      */
-    public ServerExecutor getClient(Class<?> clazz) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public ServerProxy getClient(Class<?> clazz) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         if(client == null){
             synchronized (this){
                 if(client == null){
                     TProtocol protocol = protocolFactory.buildProtocol(transportWrapper.getTransport(), serverName);
                     Constructor<?> constructor = clazz.getConstructor(TProtocol.class);
                     Object instance = constructor.newInstance(protocol);
-                    client = new ServerExecutor(instance,transportWrapper.getServiceExecutor());
+                    client = new ServerProxy(instance,transportWrapper.getServiceExecutor());
                 }
             }
         }

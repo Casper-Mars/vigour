@@ -9,7 +9,7 @@ import java.util.concurrent.Future;
  *
  * @author casper
  **/
-public class ServerExecutor {
+public class ServerProxy {
 
 
     /**
@@ -22,7 +22,7 @@ public class ServerExecutor {
      */
     private final ServiceExecutor serviceExecutor;
 
-    public ServerExecutor(Object client, ServiceExecutor serviceExecutor) {
+    public ServerProxy(Object client, ServiceExecutor serviceExecutor) {
         this.client = client;
         this.serviceExecutor = serviceExecutor;
     }
