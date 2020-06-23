@@ -29,6 +29,9 @@ import org.apache.thrift.protocol.TProtocol;
 import org.r.framework.thrift.netty.NettyTransport;
 import org.r.framework.thrift.netty.ThriftMessage;
 import org.r.framework.thrift.server.core.wrapper.ServerDef;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import sun.rmi.runtime.Log;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -55,6 +58,7 @@ import java.util.concurrent.atomic.AtomicReference;
 // TODO: 20-5-6 类逻辑异常复杂，应该进行重构优化
 public class MessageDispatcher extends ChannelInboundHandlerAdapter {
 
+    private final Logger log = LoggerFactory.getLogger(MessageDispatcher.class);
 
     private final TProcessor processor;
     private final Executor exe;
@@ -267,6 +271,7 @@ public class MessageDispatcher extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof ThriftMessage) {
+            log.info("dispatch msg...........................");
             ThriftMessage message = (ThriftMessage) msg;
             message.setProcessStartTimeMillis(System.currentTimeMillis());
             checkResponseOrderingRequirements(ctx, message);

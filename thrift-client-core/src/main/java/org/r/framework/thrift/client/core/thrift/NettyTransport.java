@@ -76,6 +76,7 @@ public class NettyTransport extends TTransport {
                 respondBuf = poll.get();
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                throw new TTransportException();
             }
         }
         /*读取前获取读的指针位置*/
@@ -114,8 +115,7 @@ public class NettyTransport extends TTransport {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        innerBuffer.resetWriterIndex();
-        innerBuffer.resetReaderIndex();
+        innerBuffer.clear();
     }
 
 }

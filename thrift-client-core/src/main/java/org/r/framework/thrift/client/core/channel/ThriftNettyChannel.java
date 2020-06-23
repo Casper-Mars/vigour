@@ -52,7 +52,7 @@ public class ThriftNettyChannel extends NioSocketChannel {
         ThriftRequest thriftRequest = new ThriftRequest();
         int seqId = getSeqId(msg);
         this.requestMap.put(seqId, thriftRequest);
-        doWriteBytes(msg);
+        writeAndFlush(msg);
         return thriftRequest;
     }
 

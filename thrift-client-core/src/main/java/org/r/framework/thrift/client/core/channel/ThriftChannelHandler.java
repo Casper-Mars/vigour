@@ -3,6 +3,7 @@ package org.r.framework.thrift.client.core.channel;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 /**
@@ -10,15 +11,18 @@ import io.netty.channel.SimpleChannelInboundHandler;
  *
  * @author casper
  */
-public class ThriftChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
+public class ThriftChannelHandler extends ChannelInboundHandlerAdapter {
 
 
     @Override
-    protected void channelRead0(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf) throws Exception {
-        Channel channel = channelHandlerContext.channel();
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        Channel channel = ctx.channel();
         if (channel instanceof ThriftNettyChannel) {
             ThriftNettyChannel nettyChannel = (ThriftNettyChannel) channel;
-            nettyChannel.onMsgRec(byteBuf);
+            nettyChannel.onMsgRec((ByteBuf) msg);
+        } else {
+            super.channelRead(ctx, msg);
         }
     }
+
 }

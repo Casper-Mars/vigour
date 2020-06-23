@@ -4,6 +4,8 @@ import com.google.common.util.concurrent.SettableFuture;
 import io.netty.buffer.ByteBuf;
 
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * date 20-6-1 下午5:17
@@ -30,6 +32,7 @@ public class ThriftRequest {
     public ByteBuf get() {
         try {
             return innerObject.get();
+//            return innerObject.get(10, TimeUnit.SECONDS);
         } catch (ExecutionException | InterruptedException e) {
             e.printStackTrace();
         }

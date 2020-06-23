@@ -51,10 +51,10 @@ public class ThriftProtocolDecoder extends ChannelInboundHandlerAdapter {
             ByteBuf buffer = (ByteBuf) msg;
 
             /*buffer不可读或者buffer的大小还不够一个int（用来存放数据长度的）*/
-            if (!buffer.isReadable() || buffer.readableBytes() < MESSAGE_FRAME_SIZE) {
+            if (!buffer.isReadable()) {
                 return;
             }
-            /*获取buffer的第一个16位无符号整形数作为判断的标志位*/
+            /*获取buffer的第一个8位无符号整形数作为判断的标志位*/
             short firstByte = buffer.getUnsignedByte(0);
             /*如果标志位大于等于128，则buffer的数据是原生的thrift请求。否则，是经过netty封装的数据*/
 
@@ -65,6 +65,8 @@ public class ThriftProtocolDecoder extends ChannelInboundHandlerAdapter {
                     // protocol id (and thus it is unframed).
                     message = new ThriftMessage(messageBuffer, ThriftTransportType.UNFRAMED);
                 }
+            }else if (buffer.readableBytes() < MESSAGE_FRAME_SIZE){
+                return;
             } else {
                 ByteBuf messageBuffer = tryDecodeFramedMessage(ctx, buffer);
                 if (messageBuffer != null) {

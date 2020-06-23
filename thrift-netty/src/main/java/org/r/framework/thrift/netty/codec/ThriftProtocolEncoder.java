@@ -57,7 +57,7 @@ public class ThriftProtocolEncoder extends MessageToByteEncoder<ThriftMessage> {
                 frameSizeBuffer.writeInt(message.getBuffer().readableBytes());
                 out.writeBytes(frameSizeBuffer);
                 out.writeBytes(message.getBuffer());
-
+                break;
             default:
                 throw new UnsupportedOperationException("Unrecognized transport type");
         }
