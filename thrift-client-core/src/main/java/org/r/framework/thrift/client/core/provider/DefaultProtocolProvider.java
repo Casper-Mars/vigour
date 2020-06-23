@@ -6,7 +6,7 @@ import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.r.framework.thrift.client.core.observer.ServiceObserver;
-import org.r.framework.thrift.client.core.wrapper.ServerWrapper;
+import org.r.framework.thrift.client.core.wrapper.ServiceWrapper;
 import org.springframework.util.CollectionUtils;
 
 import java.util.LinkedList;
@@ -33,10 +33,10 @@ public class DefaultProtocolProvider implements ProtocolProvider {
     }
 
     private void refresh() {
-        List<ServerWrapper> allServer = serviceInfoProvider.getAllServer();
+        List<ServiceWrapper> allServer = serviceInfoProvider.getAllServer();
         if (!CollectionUtils.isEmpty(allServer)) {
-            for (ServerWrapper serverWrapper : allServer) {
-                registry(serverWrapper.getName(), serverWrapper.getHost(), serverWrapper.getPort());
+            for (ServiceWrapper serviceWrapper : allServer) {
+                registry(serviceWrapper.getName(), serviceWrapper.getHost(), serviceWrapper.getPort());
             }
         }
         notifyAllObserver();

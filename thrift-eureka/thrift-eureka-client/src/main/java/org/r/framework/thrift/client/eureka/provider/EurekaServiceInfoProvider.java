@@ -6,7 +6,7 @@ import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import org.r.framework.thrift.client.core.observer.ServiceObserver;
 import org.r.framework.thrift.client.core.provider.ServiceInfoProvider;
-import org.r.framework.thrift.client.core.wrapper.ServerWrapper;
+import org.r.framework.thrift.client.core.wrapper.ServiceWrapper;
 import org.r.framework.thrift.common.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,12 +31,12 @@ public class EurekaServiceInfoProvider implements ServiceInfoProvider {
     /**
      * 服务信息
      */
-    private final List<ServerWrapper> serverWrappers;
+    private final List<ServiceWrapper> serviceWrappers;
 
     /**
      * 用服务名称作为key的服务信息索引，提高单个服务信息的查询速度
      */
-    private final Map<String, ServerWrapper> index;
+    private final Map<String, ServiceWrapper> index;
     /**
      * eureka的客户端，用来获取注册的服务
      */
@@ -46,7 +46,7 @@ public class EurekaServiceInfoProvider implements ServiceInfoProvider {
     public EurekaServiceInfoProvider(EurekaClient eurekaClient) {
         this.eurekaClient = eurekaClient;
         observers = new LinkedList<>();
-        serverWrappers = new LinkedList<>();
+        serviceWrappers = new LinkedList<>();
         index = new HashMap<>();
         rebuild();
     }
@@ -57,11 +57,11 @@ public class EurekaServiceInfoProvider implements ServiceInfoProvider {
      * @return
      */
     @Override
-    public List<ServerWrapper> getAllServer() {
-        if (serverWrappers == null) {
+    public List<ServiceWrapper> getAllServer() {
+        if (serviceWrappers == null) {
             return new ArrayList<>();
         }
-        return serverWrappers;
+        return serviceWrappers;
     }
 
     /**
@@ -71,13 +71,13 @@ public class EurekaServiceInfoProvider implements ServiceInfoProvider {
      * @return
      */
     @Override
-    public List<ServerWrapper> getTargetServer(Set<String> targetServerList) {
-        return this.serverWrappers.stream().filter(t -> targetServerList.contains(t.getName())).collect(Collectors.toList());
+    public List<ServiceWrapper> getTargetServer(Set<String> targetServerList) {
+        return this.serviceWrappers.stream().filter(t -> targetServerList.contains(t.getName())).collect(Collectors.toList());
     }
 
 
     @Override
-    public ServerWrapper getServer(String serverName) {
+    public ServiceWrapper getServer(String serverName) {
         return index.get(serverName);
     }
 
@@ -107,7 +107,7 @@ public class EurekaServiceInfoProvider implements ServiceInfoProvider {
      * 一个服务对应到eureka的一个application，因此一个服务有多个提供者（instance）
      */
     private void rebuild() {
-        serverWrappers.clear();
+        serviceWrappers.clear();
         index.clear();
         List<Application> registeredApplications = eurekaClient.getApplications().getRegisteredApplications();
         for (Application application : registeredApplications) {
@@ -125,9 +125,9 @@ public class EurekaServiceInfoProvider implements ServiceInfoProvider {
 
                     for (String serverName : serverNames) {
                         String[] split = serverName.split(":");
-                        ServerWrapper serverWrapper = new ServerWrapper(ipAddr, Integer.parseInt(split[1]), split[0], isAvailable);
-                        serverWrappers.add(serverWrapper);
-                        index.put(serverWrapper.getName(), serverWrapper);
+                        ServiceWrapper serviceWrapper = new ServiceWrapper(ipAddr, Integer.parseInt(split[1]), split[0], isAvailable);
+                        serviceWrappers.add(serviceWrapper);
+                        index.put(serviceWrapper.getName(), serviceWrapper);
                     }
                 } catch (Exception e) {
                     log.error("can not init server:" + serverInfoJson);

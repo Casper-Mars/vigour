@@ -18,6 +18,7 @@
         <module>thrift-eureka</module>
         <module>thrift-server-core</module>
         <module>thrift-netty</module>
+        <module>framework-test</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -45,6 +46,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter</artifactId>
+                <version>${springbootParent.version}</version>
             </dependency>
             <!--thrift-->
             <dependency>

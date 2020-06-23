@@ -2,7 +2,7 @@ package org.r.framework.thrift.client.core.manager;
 
 import org.apache.thrift.transport.TTransportException;
 import org.r.framework.thrift.client.core.exception.TransportFailException;
-import org.r.framework.thrift.client.core.wrapper.ServerWrapper;
+import org.r.framework.thrift.client.core.wrapper.ServiceWrapper;
 import org.r.framework.thrift.client.core.wrapper.TransportWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,12 +111,12 @@ public class TransportManager {
     /**
      * 更新transport列表
      *
-     * @param serverWrappers 最新的transport列表
+     * @param serviceWrappers 最新的transport列表
      * @return 新增的transport列表
      */
-    public void updateTransportList(List<ServerWrapper> serverWrappers) {
+    public void updateTransportList(List<ServiceWrapper> serviceWrappers) {
         /*删除最新列表上没有的服务地址*/
-        Map<String, ServerWrapper> serverWrapperMap = serverWrappers.stream().collect(Collectors.toMap(t -> signature(t.getHost(), t.getPort()), t -> t, (k1, k2) -> k1));
+        Map<String, ServiceWrapper> serverWrapperMap = serviceWrappers.stream().collect(Collectors.toMap(t -> signature(t.getHost(), t.getPort()), t -> t, (k1, k2) -> k1));
         Collection<String> signaltrues = serverWrapperMap.keySet();
         for (String signaltrue : transports.keySet()) {
             if (!signaltrues.contains(signaltrue)) {

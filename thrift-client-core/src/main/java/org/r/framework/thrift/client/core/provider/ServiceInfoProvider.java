@@ -1,7 +1,7 @@
 package org.r.framework.thrift.client.core.provider;
 
 import org.r.framework.thrift.client.core.observer.ServiceObserver;
-import org.r.framework.thrift.client.core.wrapper.ServerWrapper;
+import org.r.framework.thrift.client.core.wrapper.ServiceWrapper;
 
 import java.util.List;
 import java.util.Set;
@@ -19,7 +19,7 @@ public interface ServiceInfoProvider {
      *
      * @return
      */
-    List<ServerWrapper> getAllServer();
+    List<ServiceWrapper> getAllServer();
 
     /**
      * 获取列表指定的服务的信息
@@ -27,7 +27,7 @@ public interface ServiceInfoProvider {
      * @param targetServerList 指定的服务列表
      * @return
      */
-    List<ServerWrapper> getTargetServer(Set<String> targetServerList);
+    List<ServiceWrapper> getTargetServer(Set<String> targetServerList);
 
     /**
      * 通过服务名称获得服务信息
@@ -35,7 +35,7 @@ public interface ServiceInfoProvider {
      * @param serverName 服务名称
      * @return
      */
-    ServerWrapper getServer(String serverName);
+    ServiceWrapper getServer(String serverName);
 
     /**
      * 添加观察者

@@ -1,155 +1,122 @@
 package org.r.framework.thrift.client.core.manager;
 
-import org.r.framework.thrift.client.core.exception.TransportFailException;
-import org.r.framework.thrift.client.core.factory.ServerFactory;
-import org.r.framework.thrift.client.core.factory.ProtocolFactory;
-import org.r.framework.thrift.client.core.thread.ServerProxy;
-import org.r.framework.thrift.client.core.wrapper.TransportWrapper;
+import org.r.framework.thrift.client.core.factory.DefaultThriftClientFactory;
+import org.r.framework.thrift.client.core.factory.ThriftClientFactory;
+import org.r.framework.thrift.client.core.observer.ServiceObserver;
+import org.r.framework.thrift.client.core.provider.ServiceInfoProvider;
+import org.r.framework.thrift.client.core.wrapper.ServiceWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
- * date 2020/5/7 21:16
+ * date 2020/5/7 21:51
  *
  * @author casper
  */
-public class ServerManagerImpl implements Function<TransportWrapper, Boolean> {
+public class ServerManagerImpl implements ServiceObserver, ServerManager {
 
     private final Logger log = LoggerFactory.getLogger(ServerManagerImpl.class);
 
-
     /**
-     * 服务名称
+     * 服务信息提供者
      */
-    private final String name;
-
+    private final ServiceInfoProvider serviceInfoProvider;
     /**
-     * 底层socket管理器
+     * 服务列表
+     */
+    private final Map<String, ServiceManager> services;
+    /**
+     * 底层socket管理器，用于多个service复用同一个socket，降低系统的开销
      */
     private final TransportManager transportManager;
+    /**
+     * 目标服务列表，会使用此列表进行过滤，列表上有的服务才会进行处理和维护
+     */
+    private final Set<String> targetServiceList;
 
     /**
-     * 协议工厂
+     * thrift客户端工厂
      */
-    private final ProtocolFactory protocolFactory;
+    private final ThriftClientFactory thriftClientFactory;
 
-    /**
-     * 客户端列表
-     */
-    private final List<ServerFactory> clientList;
-
-    /**
-     * 用于指示服务使用的底层socket，避免重复添加
-     */
-    private final Set<TransportWrapper> transportsSet;
-
-
-    /**
-     * 计数器，用于负载均衡
-     */
-    private final AtomicInteger counter;
-
-    public ServerManagerImpl(String name, TransportManager transportManager, ProtocolFactory protocolFactory) {
-        this.name = name;
-        this.transportsSet = new HashSet<>();
-        this.transportManager = transportManager;
-        this.protocolFactory = protocolFactory;
-        this.transportManager.observedBy(this);
-        this.clientList = new LinkedList<>();
-        this.counter = new AtomicInteger(0);
-    }
-
-    public String getName() {
-        return name;
+    public ServerManagerImpl(ServiceInfoProvider serviceInfoProvider, ChannelManager channelManager) {
+        this.serviceInfoProvider = serviceInfoProvider;
+        serviceInfoProvider.addObserver(this);
+        this.services = new HashMap<>();
+        this.transportManager = new TransportManager();
+        this.targetServiceList = new HashSet<>();
+        this.thriftClientFactory = new DefaultThriftClientFactory(channelManager);
+        updateClientList();
     }
 
     /**
-     * transport被删除的时候，会回调此方法
-     * 当此服务管理器的实例列表为空时，返回true，表示transport管理器要移除本服务管理器的监听
-     *
-     * @param transportWrapper transport的信息
-     * @return true, 表示transport管理器要移除本服务管理器的监听
+     * 1、先更新transport，移除已经不存在的transport，同时会通知对应的服务管理器移除对应的实例，添加新增的transport
+     * 2、再更新服务管理器列表，移除不存在的服务
+     * 3、根据新增的transport过滤出新增的服务实例，并添加到对应的服务管理器中
      */
     @Override
-    public Boolean apply(TransportWrapper transportWrapper) {
-        log.info("server[{}] instance[{}:{}] removed",this.name,transportWrapper.getHost(),transportWrapper.getPort());
-        this.clientList.removeIf(i -> i.getTransportWrapper().equals(transportWrapper));
-        transportsSet.remove(transportWrapper);
-        return this.clientList.isEmpty();
-    }
+    public synchronized void updateClientList() {
 
-    /**
-     * 注册客户端
-     *
-     * @param host 地址
-     * @param port 端口
-     */
-    public void registryClient(String host, int port) {
-        TransportWrapper transport = null;
-        try {
-            transport = transportManager.getTransportWrapper(host, port);
-        } catch (TransportFailException e) {
-            log.error("无法注册服务实例：{}:{}", host, port, e);
-        }
-        if (transportsSet.contains(transport)) {
-            return;
-        }
-        transportsSet.add(transport);
-        ServerFactory factory = new ServerFactory(this.name, transport, protocolFactory);
-        clientList.add(factory);
-    }
-
-
-    /**
-     * 获取客户端请求执行器
-     *
-     * @param thriftClientClass thrift原生实现的客户端类的class
-     * @return
-     */
-    public ServerProxy getClient(Class<?> thriftClientClass) {
-        ServerFactory serverFactory = getClientFactory();
-        if(serverFactory ==null){
-            return null;
-        }
-        ServerProxy target = null;
-        try {
-            target = serverFactory.getClient(thriftClientClass);
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
-            e.printStackTrace();
-        }
-        return target;
-    }
-
-    /**
-     * 具体的负载均衡算法实现，要在集合中选取最佳的
-     * 目前的算法只是按顺序分配任务。并且存在多线程的问题，获取到的factory未必是有效的服务实例，存在情况有可能在获取后该实例就down了
-     *
-     * @return
-     */
-    private ServerFactory getClientFactory() {
-        if(clientList.isEmpty()){
-            return null;
-        }
-        int i = counter.incrementAndGet();
-        int index = i % clientList.size();
-        ServerFactory target = clientList.get(index);
-        if (i >= clientList.size()) {
-            synchronized (this) {
-                i = counter.get();
-                if (i >= clientList.size()) {
-                    counter.set(0);
-                }
+        log.info("server list refresh");
+        /*获取全部的服务实例*/
+        List<ServiceWrapper> allServer = serviceInfoProvider.getTargetServer(this.targetServiceList);
+        /*提取最新列表的服务名称列表*/
+        Set<String> serverName = allServer.stream().map(ServiceWrapper::getName).collect(Collectors.toSet());
+        /*更新transport*/
+        transportManager.updateTransportList(allServer);
+        /*移除不存在的服务的服务管理器*/
+        Collection<String> deletes = new HashSet<>(services.keySet());
+        deletes.removeAll(serverName);
+        if (!CollectionUtils.isEmpty(deletes)) {
+            for (String delete : deletes) {
+                services.remove(delete);
             }
         }
-        return target;
+
+        for (ServiceWrapper serviceWrapper : allServer) {
+            /*如果服务实例不可用，则移除服务和transport*/
+            if (!serviceWrapper.isAvailable()) {
+                log.info("server:{}[{}:{}] is unavailable", serviceWrapper.getName(), serviceWrapper.getHost(), serviceWrapper.getPort());
+                transportManager.deleteTransport(serviceWrapper.getHost(), serviceWrapper.getPort());
+            } else {
+                log.info("server:{}[{}:{}] is up", serviceWrapper.getName(), serviceWrapper.getHost(), serviceWrapper.getPort());
+                ServiceManager ServiceManager = services.get(serviceWrapper.getName());
+                if (ServiceManager == null) {
+                    ServiceManager = new DefaultServiceManager(serviceWrapper.getName(), this.thriftClientFactory);
+                    services.put(serviceWrapper.getName(), ServiceManager);
+                }
+                ServiceManager.registryService(serviceWrapper.getHost(), serviceWrapper.getPort());
+            }
+        }
     }
 
+    /**
+     * 获取服务代理对象
+     *
+     * @param serverName  服务名称
+     * @param serverClass 服务的类
+     * @return
+     */
+    @Override
+    public Object getServer(String serverName, Class<?> serverClass) {
+        ServiceManager serviceManager = services.get(serverName);
+        if (serviceManager != null) {
+            return serviceManager.getService(serverClass);
+        }
+        return null;
+    }
+
+    /**
+     * 添加目标服务
+     *
+     * @param serverName 服务名称
+     */
+    @Override
+    public void addTargetServer(String serverName) {
+        this.targetServiceList.add(serverName);
+    }
 }

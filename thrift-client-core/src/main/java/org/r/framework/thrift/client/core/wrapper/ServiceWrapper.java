@@ -5,7 +5,7 @@ package org.r.framework.thrift.client.core.wrapper;
  *
  * @author casper
  */
-public class ServerWrapper {
+public class ServiceWrapper {
 
     private String host;
 
@@ -15,7 +15,7 @@ public class ServerWrapper {
 
     private boolean isAvailable;
 
-    public ServerWrapper(String host, int port, String name, boolean isAvailable) {
+    public ServiceWrapper(String host, int port, String name, boolean isAvailable) {
         this.host = host;
         this.port = port;
         this.name = name;

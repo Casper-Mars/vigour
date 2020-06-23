@@ -1,7 +1,6 @@
 package org.r.framework.thrift.client.core;
 
-import org.r.framework.thrift.client.core.manager.ClientManager;
-import org.r.framework.thrift.client.core.thread.ServerProxy;
+import org.r.framework.thrift.client.core.manager.ServerManagerImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cglib.proxy.MethodInterceptor;
@@ -9,7 +8,6 @@ import org.springframework.cglib.proxy.MethodProxy;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.concurrent.Future;
 
 /**
  * date 20-5-8 下午2:44
@@ -22,29 +20,38 @@ public class ProxyClient implements MethodInterceptor {
 
     private final String serverName;
     private final Class<?> serviceClass;
-    private final ClientManager manager;
+    private final ServerManagerImpl manager;
     private final Object fallback;
 
-    public ProxyClient(String serverName, ClientManager manager, Object fallback, Class<?> serviceClass) {
+    public ProxyClient(String serverName, ServerManagerImpl manager, Object fallback, Class<?> serviceClass) {
         this.serverName = serverName;
         this.manager = manager;
         this.fallback = fallback;
         this.serviceClass = serviceClass;
-        manager.addTargetService(serverName);
+        manager.addTargetServer(serverName);
     }
 
+    /**
+     * 拦截方法执行
+     *
+     * @param o
+     * @param method
+     * @param objects
+     * @param methodProxy
+     * @return
+     * @throws Throwable
+     */
     @Override
     public Object intercept(Object o, Method method, Object[] objects, MethodProxy methodProxy) throws Throwable {
         Object result = null;
-        ServerProxy client = manager.buildClient(serverName, serviceClass);
+        Object client = manager.getServer(serverName, serviceClass);
         if (client == null && fallback == null) {
             throw new RuntimeException("no client for this server:" + serverName);
         }
         boolean invokeSuccess = false;
         try {
             if (client != null) {
-                Future<Object> submitTask = client.submitTask(t -> method.invoke(t, objects));
-                result = submitTask.get();
+                result = method.invoke(client, objects);
                 invokeSuccess = true;
             }
         } catch (Exception e) {
@@ -68,6 +75,16 @@ public class ProxyClient implements MethodInterceptor {
     }
 
 
+    /**
+     * 调用本地的熔断器
+     *
+     * @param method  方法名称
+     * @param objects 参数
+     * @return
+     * @throws NoSuchMethodException
+     * @throws InvocationTargetException
+     * @throws IllegalAccessException
+     */
     private Object invokeFallback(Method method, Object[] objects) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         log.warn("circuit broken for server:" + serverName);
         Method fallbackMethod = fallback.getClass().getMethod(method.getName(), method.getParameterTypes());
