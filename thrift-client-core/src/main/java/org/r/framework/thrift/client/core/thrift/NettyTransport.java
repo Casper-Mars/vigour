@@ -70,7 +70,7 @@ public class NettyTransport extends TTransport {
     @Override
     public int read(byte[] buf, int off, int len) throws TTransportException {
 
-        if (!respondBuf.isReadable()) {
+        if (respondBuf == null || !respondBuf.isReadable()) {
             try {
                 ThriftRequest poll = requestQueue.take();
                 respondBuf = poll.get();
@@ -97,8 +97,7 @@ public class NettyTransport extends TTransport {
      */
     @Override
     public void write(byte[] buf, int off, int len) throws TTransportException {
-        ByteBuf byteBuf = Unpooled.copiedBuffer(buf, off, len);
-        channel.write(byteBuf);
+        innerBuffer.writeBytes(buf, off, len);
     }
 
     /**

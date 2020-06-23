@@ -18,7 +18,7 @@
         <module>thrift-eureka</module>
         <module>thrift-server-core</module>
         <module>thrift-netty</module>
-        <module>framework-test</module>
+        <module>test</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -91,6 +91,16 @@
             <dependency>
                 <groupId>org.r.framework</groupId>
                 <artifactId>thrift-server-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.r.framework</groupId>
+                <artifactId>thrift-eureka-client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.r.framework</groupId>
+                <artifactId>thrift-eureka-server</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>
