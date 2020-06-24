@@ -10,6 +10,7 @@ import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
 import org.r.framework.thrift.client.core.channel.ThriftChannelHandler;
 import org.r.framework.thrift.client.core.channel.ThriftNettyChannel;
+import org.r.framework.thrift.client.core.channel.ThriftServerConnectHandler;
 import org.r.framework.thrift.client.core.config.ConfigProperties;
 import org.r.framework.thrift.client.core.exception.ChannelOpenFailException;
 
@@ -47,6 +48,7 @@ public class DefaultChannelFactory implements ChannelFactory {
             protected void initChannel(ThriftNettyChannel ch) throws Exception {
                 ChannelPipeline pipeline = ch.pipeline();
                 pipeline
+                        .addLast("connectHandler", new ThriftServerConnectHandler())
                         .addLast("frameEncode", new LengthFieldPrepender(LENGTH_FIELD_LENGTH))
                         .addLast("frameDecode", new LengthFieldBasedFrameDecoder(
                                 configProperties.getMaxFrameSize(),

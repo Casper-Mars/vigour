@@ -5,7 +5,7 @@ import org.r.framework.thrift.client.core.factory.ChannelFactory;
 import org.r.framework.thrift.client.core.factory.DefaultChannelFactory;
 import org.r.framework.thrift.client.core.manager.ChannelManager;
 import org.r.framework.thrift.client.core.manager.DefaultChannelManager;
-import org.r.framework.thrift.client.core.manager.ServerManagerImpl;
+import org.r.framework.thrift.client.core.manager.DefaultServerManager;
 import org.r.framework.thrift.client.core.provider.ServiceInfoProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -38,8 +38,8 @@ public class ThriftClientAutoConfig {
 
     @Bean
     @ConditionalOnBean(ServiceInfoProvider.class)
-    public ServerManagerImpl clientManager(ServiceInfoProvider serviceInfoProvider, ChannelManager channelManager) {
-        return new ServerManagerImpl(serviceInfoProvider, channelManager);
+    public DefaultServerManager clientManager(ServiceInfoProvider serviceInfoProvider, ChannelManager channelManager) {
+        return new DefaultServerManager(serviceInfoProvider, channelManager);
     }
 
 

@@ -1,7 +1,5 @@
 package org.r.framework.thrift.client.core.manager;
 
-import org.r.framework.thrift.client.core.thread.ServerProxy;
-
 /**
  * @author casper
  * @date 2020/6/23 下午12:57

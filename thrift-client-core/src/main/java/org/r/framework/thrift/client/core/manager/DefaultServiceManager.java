@@ -1,25 +1,21 @@
 package org.r.framework.thrift.client.core.manager;
 
-import org.r.framework.thrift.client.core.factory.DefaultServiceFactory;
-import org.r.framework.thrift.client.core.factory.ServiceFactory;
 import org.r.framework.thrift.client.core.factory.ThriftClientFactory;
+import org.r.framework.thrift.client.core.wrapper.ServiceInstance;
 import org.r.framework.thrift.client.core.wrapper.ServiceWrapper;
-import org.r.framework.thrift.client.core.wrapper.TransportWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 
 /**
  * date 2020/5/7 21:16
  *
  * @author casper
  */
-public class DefaultServiceManager implements ServiceManager, Function<TransportWrapper, Boolean> {
+public class DefaultServiceManager implements ServiceManager {
 
     private final Logger log = LoggerFactory.getLogger(DefaultServiceManager.class);
 
@@ -32,7 +28,7 @@ public class DefaultServiceManager implements ServiceManager, Function<Transport
     /**
      * 服务实例列表
      */
-    private final List<ServiceFactory> serviceList;
+    private final List<ServiceInstance> serviceList;
 
     /**
      * thrift客户端工厂
@@ -56,20 +52,6 @@ public class DefaultServiceManager implements ServiceManager, Function<Transport
     }
 
     /**
-     * transport被删除的时候，会回调此方法
-     * 当此服务管理器的实例列表为空时，返回true，表示transport管理器要移除本服务管理器的监听
-     *
-     * @param transportWrapper transport的信息
-     * @return true, 表示transport管理器要移除本服务管理器的监听
-     */
-    @Override
-    public Boolean apply(TransportWrapper transportWrapper) {
-        log.info("server[{}] instance[{}:{}] removed", this.name, transportWrapper.getHost(), transportWrapper.getPort());
-//        this.serviceList.removeIf(i -> i.getTransportWrapper().equals(transportWrapper));
-        return this.serviceList.isEmpty();
-    }
-
-    /**
      * 注册服务
      *
      * @param host 远程主机地址
@@ -77,7 +59,7 @@ public class DefaultServiceManager implements ServiceManager, Function<Transport
      */
     public void registryService(String host, int port) {
         ServiceWrapper serviceWrapper = new ServiceWrapper(host, port, this.name, true);
-        ServiceFactory factory = new DefaultServiceFactory(serviceWrapper, this.thriftClientFactory);
+        ServiceInstance factory = new ServiceInstance(serviceWrapper, this.thriftClientFactory);
         serviceList.add(factory);
     }
 
@@ -87,13 +69,13 @@ public class DefaultServiceManager implements ServiceManager, Function<Transport
      *
      * @return
      */
-    private ServiceFactory getServiceFactory() {
+    private ServiceInstance getServiceFactory() {
         if (serviceList.isEmpty()) {
             return null;
         }
         int i = counter.incrementAndGet();
         int index = i % serviceList.size();
-        ServiceFactory target = serviceList.get(index);
+        ServiceInstance target = serviceList.get(index);
         if (i >= serviceList.size()) {
             synchronized (this) {
                 i = counter.get();
@@ -113,15 +95,10 @@ public class DefaultServiceManager implements ServiceManager, Function<Transport
      */
     @Override
     public Object getService(Class<?> serviceClass) {
-        ServiceFactory serviceFactory = getServiceFactory();
-        if (serviceFactory == null) {
+        ServiceInstance serviceInstance = getServiceFactory();
+        if (serviceInstance == null) {
             return null;
         }
-        try {
-            return serviceFactory.buildServerProxy(serviceClass);
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return serviceInstance.build(serviceClass);
     }
 }

@@ -1,21 +1,21 @@
-package org.r.framework.thrift.client.core.factory;
+package org.r.framework.thrift.client.core.wrapper;
 
-import org.r.framework.thrift.client.core.wrapper.ServiceWrapper;
+import org.r.framework.thrift.client.core.factory.ThriftClientFactory;
 
 /**
  * date 2020/5/24 23:41
  *
  * @author casper
  */
-public class DefaultServiceFactory implements ServiceFactory {
+public class ServiceInstance {
 
     private final ServiceWrapper serviceWrapper;
     private final ThriftClientFactory thriftClientFactory;
     private final ThreadLocal<Object> serviceProxy;
 
-    public DefaultServiceFactory(ServiceWrapper serviceWrapper, ThriftClientFactory thriftClientFactory) {
+    public ServiceInstance(ServiceWrapper serviceWrapper, ThriftClientFactory thriftClientFactory) {
         this.serviceWrapper = serviceWrapper;
-        this.thriftClientFactory = thriftClientFactory;
+        this.thriftClientFactor y = thriftClientFactory;
         this.serviceProxy = new ThreadLocal<>();
     }
 
@@ -25,8 +25,7 @@ public class DefaultServiceFactory implements ServiceFactory {
      * @param clazz 服务实现类
      * @return
      */
-    @Override
-    public Object buildServerProxy(Class<?> clazz) {
+    public Object build(Class<?> clazz) {
         Object proxy = this.serviceProxy.get();
         if (proxy == null) {
             proxy = thriftClientFactory.buildClient(clazz, serviceWrapper.getName(), serviceWrapper.getHost(), serviceWrapper.getPort());
@@ -34,4 +33,11 @@ public class DefaultServiceFactory implements ServiceFactory {
         }
         return proxy;
     }
+
+
+
+
+
+
+
 }
