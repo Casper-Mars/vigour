@@ -7,6 +7,9 @@ import org.springframework.web.bind.annotation.RestController;
 import test.iface.Request;
 import test.iface.service.LoginService;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -26,40 +29,44 @@ public class TestController {
     @RequestMapping("/test")
     public String test(String echo) {
         String result = echo;
-        Request request = new Request();
-        request.setUsername(String.valueOf(index.getAndIncrement()));
-        request.setPassword(echo);
-        try {
-            result = loginService.doAction(request);
-        } catch (TException e) {
-            e.printStackTrace();
-        }
-        System.out.println(result);
-//        int size = 10;
-//        ExecutorService service = Executors.newCachedThreadPool();
-//        for (int i = 0; i < size; i++) {
-//            service.submit(new Runnable() {
-//                @Override
-//                public void run() {
-//                    String result = "null";
-//                    Request request = new Request();
-//                    request.setUsername(String.valueOf(index.getAndIncrement()));
-//                    request.setPassword(echo);
-//                    try {
-//                        result = loginService.doAction(request);
-//                    } catch (TException e) {
-//                        e.printStackTrace();
-//                    }
-//                    System.out.println(result);
-//
-//                }
-//            });
-//        }
+//        Request request = new Request();
+//        request.setUsername(String.valueOf(index.getAndIncrement()));
+//        request.setPassword(echo);
 //        try {
-//            service.awaitTermination(10, TimeUnit.SECONDS);
-//        } catch (InterruptedException e) {
+//            result = loginService.doAction(request);
+//        } catch (TException e) {
 //            e.printStackTrace();
 //        }
+//        System.out.println(result);
+        int size = 10;
+        Thread[] threads = new Thread[size];
+        for (int i = 0; i < size; i++) {
+            Thread tmp = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    String result = "null";
+                    Request request = new Request();
+                    request.setUsername(String.valueOf(index.getAndIncrement()));
+                    request.setPassword(echo);
+                    try {
+                        result = loginService.doAction(request);
+                    } catch (TException e) {
+                        e.printStackTrace();
+                    }
+                    System.out.println(result);
+
+                }
+            });
+            threads[i] = tmp;
+            tmp.start();
+        }
+        for (Thread thread : threads) {
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
         return result;
     }
 

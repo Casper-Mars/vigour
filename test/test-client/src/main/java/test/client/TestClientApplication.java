@@ -14,11 +14,11 @@ import org.springframework.context.ConfigurableApplicationContext;
 @SpringBootApplication
 @EnableThriftClient(basePackage = "test.iface")
 @EnableEurekaClient
-public class TestApplication {
+public class TestClientApplication {
 
 
     public static void main(String[] args) {
-        ConfigurableApplicationContext run = SpringApplication.run(TestApplication.class);
+        ConfigurableApplicationContext run = SpringApplication.run(TestClientApplication.class);
     }
 
 
