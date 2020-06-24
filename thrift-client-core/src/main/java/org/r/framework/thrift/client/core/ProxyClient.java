@@ -1,6 +1,7 @@
 package org.r.framework.thrift.client.core;
 
 import org.r.framework.thrift.client.core.manager.DefaultServerManager;
+import org.r.framework.thrift.client.core.manager.ServerManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cglib.proxy.MethodInterceptor;
@@ -20,10 +21,10 @@ public class ProxyClient implements MethodInterceptor {
 
     private final String serverName;
     private final Class<?> serviceClass;
-    private final DefaultServerManager manager;
+    private final ServerManager manager;
     private final Object fallback;
 
-    public ProxyClient(String serverName, DefaultServerManager manager, Object fallback, Class<?> serviceClass) {
+    public ProxyClient(String serverName, ServerManager manager, Object fallback, Class<?> serviceClass) {
         this.serverName = serverName;
         this.manager = manager;
         this.fallback = fallback;

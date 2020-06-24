@@ -29,10 +29,10 @@ public class ThriftRequest {
      *
      * @return
      */
-    public ByteBuf get() {
+    public ByteBuf get() throws TimeoutException {
         try {
-            return innerObject.get();
-//            return innerObject.get(10, TimeUnit.SECONDS);
+//            return innerObject.get();
+            return innerObject.get(10, TimeUnit.SECONDS);
         } catch (ExecutionException | InterruptedException e) {
             e.printStackTrace();
         }

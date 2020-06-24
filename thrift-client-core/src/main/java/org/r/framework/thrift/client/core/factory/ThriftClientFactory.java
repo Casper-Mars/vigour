@@ -38,6 +38,6 @@ public interface ThriftClientFactory {
      * @param port       远程进程端口
      * @return
      */
-    Object buildClient(Class<?> clazz, String serverName, String ip, int port);
+    Object buildClient(Class<?> clazz, String serverName, String ip, int port) throws ChannelOpenFailException;
 
 }

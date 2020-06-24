@@ -3,6 +3,7 @@ package org.r.framework.thrift.client.core.factory;
 import org.apache.thrift.protocol.TProtocol;
 import org.r.framework.thrift.client.core.ProxyClient;
 import org.r.framework.thrift.client.core.manager.DefaultServerManager;
+import org.r.framework.thrift.client.core.manager.ServerManager;
 import org.r.framework.thrift.common.util.ClassTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,9 +45,9 @@ public class ProxyClientBeanFactory implements InitializingBean, FactoryBean<Obj
             throw new RuntimeException("missing bean for service " + ifaceType.getCanonicalName());
         }
         originBean = context.getBean(fallbackBeanName);
-        DefaultServerManager manager;
+        ServerManager manager;
         try {
-            manager = context.getBean(DefaultServerManager.class);
+            manager = context.getBean(ServerManager.class);
             log.info("registry thrift server bean {}",ifaceType.getSimpleName());
             Class<?> iface = ClassTool.filterClass(ifaceType.getInterfaces(), "$Iface");
             Class<?> serviceClass = iface.getDeclaringClass();

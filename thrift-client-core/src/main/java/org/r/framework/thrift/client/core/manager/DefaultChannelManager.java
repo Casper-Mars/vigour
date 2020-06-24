@@ -1,8 +1,10 @@
 package org.r.framework.thrift.client.core.manager;
 
 import org.r.framework.thrift.client.core.channel.ThriftNettyChannel;
+import org.r.framework.thrift.client.core.event.ChannelCloseEvent;
 import org.r.framework.thrift.client.core.exception.ChannelOpenFailException;
 import org.r.framework.thrift.client.core.factory.ChannelFactory;
+import org.r.framework.thrift.client.core.observer.Subscriber;
 import org.r.framework.thrift.client.core.wrapper.ChannelWrapper;
 
 import java.util.Map;
@@ -14,13 +16,12 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author casper
  **/
-public class DefaultChannelManager implements ChannelManager {
+public class DefaultChannelManager implements ChannelManager, Subscriber<ChannelCloseEvent> {
 
 
     private final Map<Integer, ChannelWrapper> channels;
 
     private final ChannelFactory channelFactory;
-
 
     public DefaultChannelManager(ChannelFactory channelFactory) {
         this(channelFactory, new ConcurrentHashMap<>());
@@ -73,5 +74,14 @@ public class DefaultChannelManager implements ChannelManager {
         return new ChannelWrapper(channelFactory.build(ip, port), ip, port);
     }
 
-
+    /**
+     * 读邮件
+     *
+     * @param mail 邮件
+     */
+    @Override
+    public void readMail(ChannelCloseEvent mail) {
+        int signature = getSignature(mail.getIp(), mail.getPort());
+        this.channels.remove(signature);
+    }
 }

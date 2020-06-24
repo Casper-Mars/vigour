@@ -21,7 +21,7 @@ public interface ServiceManager {
      * @param host 远程主机地址
      * @param port 远程服务进程端口
      */
-    void registryService(String host, int port);
+    void registryServiceIfAbsence(String host, int port);
 
 
 }

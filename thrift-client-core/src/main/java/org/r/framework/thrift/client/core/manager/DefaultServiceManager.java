@@ -1,13 +1,15 @@
 package org.r.framework.thrift.client.core.manager;
 
+import org.r.framework.thrift.client.core.event.ChannelCloseEvent;
+import org.r.framework.thrift.client.core.exception.ChannelOpenFailException;
 import org.r.framework.thrift.client.core.factory.ThriftClientFactory;
+import org.r.framework.thrift.client.core.observer.Subscriber;
 import org.r.framework.thrift.client.core.wrapper.ServiceInstance;
 import org.r.framework.thrift.client.core.wrapper.ServiceWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -15,7 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @author casper
  */
-public class DefaultServiceManager implements ServiceManager {
+public class DefaultServiceManager implements ServiceManager, Subscriber<ChannelCloseEvent> {
 
     private final Logger log = LoggerFactory.getLogger(DefaultServiceManager.class);
 
@@ -36,6 +38,11 @@ public class DefaultServiceManager implements ServiceManager {
     private final ThriftClientFactory thriftClientFactory;
 
     /**
+     * 记录实例的地址hash值，为了判断实例是否存在，避免重复构建
+     */
+    private final Set<Integer> instanceHashValue;
+
+    /**
      * 计数器，用于负载均衡
      */
     private final AtomicInteger counter;
@@ -45,6 +52,7 @@ public class DefaultServiceManager implements ServiceManager {
         this.thriftClientFactory = thriftClientFactory;
         this.serviceList = new LinkedList<>();
         this.counter = new AtomicInteger(0);
+        this.instanceHashValue = new HashSet<>();
     }
 
     public String getName() {
@@ -57,10 +65,16 @@ public class DefaultServiceManager implements ServiceManager {
      * @param host 远程主机地址
      * @param port 远程服务进程端口
      */
-    public void registryService(String host, int port) {
+    public void registryServiceIfAbsence(String host, int port) {
+        int hash = getInstanceHashValue(host, port);
+        if (instanceHashValue.contains(hash)) {
+            return;
+        }
+        instanceHashValue.add(hash);
         ServiceWrapper serviceWrapper = new ServiceWrapper(host, port, this.name, true);
         ServiceInstance factory = new ServiceInstance(serviceWrapper, this.thriftClientFactory);
         serviceList.add(factory);
+
     }
 
     /**
@@ -99,6 +113,36 @@ public class DefaultServiceManager implements ServiceManager {
         if (serviceInstance == null) {
             return null;
         }
-        return serviceInstance.build(serviceClass);
+        try {
+            return serviceInstance.build(serviceClass);
+        } catch (ChannelOpenFailException e) {
+            log.error(e.getMessage(), e);
+            this.serviceList.remove(serviceInstance);
+        }
+        return null;
     }
+
+    /**
+     * 读邮件
+     *
+     * @param mail 邮件
+     */
+    @Override
+    public void readMail(ChannelCloseEvent mail) {
+        this.serviceList.removeIf(t -> t.getPort() == mail.getPort() && t.getIp().equals(mail.getIp()));
+        this.instanceHashValue.remove(getInstanceHashValue(mail.getIp(), mail.getPort()));
+    }
+
+    /**
+     * 获取实例的hash值
+     *
+     * @param ip   ip地址
+     * @param port 端口
+     * @return
+     */
+    private int getInstanceHashValue(String ip, int port) {
+        return Objects.hash(ip, port);
+    }
+
+
 }

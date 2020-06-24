@@ -7,6 +7,7 @@ import org.apache.thrift.transport.TTransportException;
 import org.r.framework.thrift.client.core.channel.ThriftNettyChannel;
 
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeoutException;
 
 /**
  * 实际上认为netty的channel对应thrift的transport
@@ -77,6 +78,8 @@ public class NettyTransport extends TTransport {
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 throw new TTransportException();
+            } catch (TimeoutException e) {
+                e.printStackTrace();
             }
         }
         /*读取前获取读的指针位置*/

@@ -12,7 +12,7 @@ import org.springframework.context.ConfigurableApplicationContext;
  * @author casper
  **/
 @SpringBootApplication
-@EnableThriftClient(basePackage = "org.r.framework.test.iface")
+@EnableThriftClient(basePackage = "test.iface")
 @EnableEurekaClient
 public class TestApplication {
 

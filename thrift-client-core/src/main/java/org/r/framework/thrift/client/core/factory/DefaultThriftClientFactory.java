@@ -63,14 +63,14 @@ public class DefaultThriftClientFactory implements ThriftClientFactory {
      * @return
      */
     @Override
-    public Object buildClient(Class<?> clazz, String serverName, String ip, int port) {
+    public Object buildClient(Class<?> clazz, String serverName, String ip, int port) throws ChannelOpenFailException {
 
         Object instance = null;
         try {
             TProtocol protocol = buildProtocol(serverName, ip, port);
             Constructor<?> constructor = clazz.getConstructor(TProtocol.class);
             instance = constructor.newInstance(protocol);
-        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException | ChannelOpenFailException e) {
+        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
             e.printStackTrace();
         }
         return instance;

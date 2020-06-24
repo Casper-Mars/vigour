@@ -1,7 +1,9 @@
 package org.r.framework.thrift.client.core.manager;
 
+import org.r.framework.thrift.client.core.event.ChannelCloseEvent;
 import org.r.framework.thrift.client.core.factory.DefaultThriftClientFactory;
 import org.r.framework.thrift.client.core.factory.ThriftClientFactory;
+import org.r.framework.thrift.client.core.observer.Postman;
 import org.r.framework.thrift.client.core.observer.ServiceObserver;
 import org.r.framework.thrift.client.core.provider.ServiceInfoProvider;
 import org.r.framework.thrift.client.core.wrapper.ServiceWrapper;
@@ -38,12 +40,15 @@ public class DefaultServerManager implements ServiceObserver, ServerManager {
      */
     private final ThriftClientFactory thriftClientFactory;
 
-    public DefaultServerManager(ServiceInfoProvider serviceInfoProvider, ChannelManager channelManager) {
+    private final Postman<ChannelCloseEvent> postman;
+
+    public DefaultServerManager(ServiceInfoProvider serviceInfoProvider, ChannelManager channelManager, Postman<ChannelCloseEvent> postman) {
         this.serviceInfoProvider = serviceInfoProvider;
         serviceInfoProvider.addObserver(this);
         this.services = new HashMap<>();
         this.targetServiceList = new HashSet<>();
         this.thriftClientFactory = new DefaultThriftClientFactory(channelManager);
+        this.postman = postman;
         updateClientList();
     }
 
@@ -72,9 +77,10 @@ public class DefaultServerManager implements ServiceObserver, ServerManager {
             ServiceManager ServiceManager = services.get(serviceWrapper.getName());
             if (ServiceManager == null) {
                 ServiceManager = new DefaultServiceManager(serviceWrapper.getName(), this.thriftClientFactory);
+                postman.subscript((DefaultServiceManager)ServiceManager);
                 services.put(serviceWrapper.getName(), ServiceManager);
             }
-            ServiceManager.registryService(serviceWrapper.getHost(), serviceWrapper.getPort());
+            ServiceManager.registryServiceIfAbsence(serviceWrapper.getHost(), serviceWrapper.getPort());
         }
     }
 

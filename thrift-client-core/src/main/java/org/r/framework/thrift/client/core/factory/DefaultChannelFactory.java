@@ -12,7 +12,9 @@ import org.r.framework.thrift.client.core.channel.ThriftChannelHandler;
 import org.r.framework.thrift.client.core.channel.ThriftNettyChannel;
 import org.r.framework.thrift.client.core.channel.ThriftServerConnectHandler;
 import org.r.framework.thrift.client.core.config.ConfigProperties;
+import org.r.framework.thrift.client.core.event.ChannelCloseEvent;
 import org.r.framework.thrift.client.core.exception.ChannelOpenFailException;
+import org.r.framework.thrift.client.core.observer.Postman;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -39,7 +41,7 @@ public class DefaultChannelFactory implements ChannelFactory {
 
     private final Bootstrap bootstrap;
 
-    public DefaultChannelFactory(ConfigProperties configProperties) {
+    public DefaultChannelFactory(ConfigProperties configProperties, Postman<ChannelCloseEvent> postman) {
         EventLoopGroup workThreads = new NioEventLoopGroup(configProperties.getWorkThreads());
         bootstrap = new Bootstrap();
         bootstrap.group(workThreads).channel(ThriftNettyChannel.class);
@@ -48,7 +50,7 @@ public class DefaultChannelFactory implements ChannelFactory {
             protected void initChannel(ThriftNettyChannel ch) throws Exception {
                 ChannelPipeline pipeline = ch.pipeline();
                 pipeline
-                        .addLast("connectHandler", new ThriftServerConnectHandler())
+                        .addLast("connectHandler", new ThriftServerConnectHandler(postman.getMailBox()))
                         .addLast("frameEncode", new LengthFieldPrepender(LENGTH_FIELD_LENGTH))
                         .addLast("frameDecode", new LengthFieldBasedFrameDecoder(
                                 configProperties.getMaxFrameSize(),
@@ -60,8 +62,6 @@ public class DefaultChannelFactory implements ChannelFactory {
                         .addLast("thriftAdapter", new ThriftChannelHandler());
             }
         });
-
-
     }
 
     /**
@@ -76,7 +76,7 @@ public class DefaultChannelFactory implements ChannelFactory {
         ChannelFuture connect = bootstrap.connect(socketAddress);
         try {
             return (ThriftNettyChannel) connect.sync().channel();
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             throw new ChannelOpenFailException(e);
         }
     }
