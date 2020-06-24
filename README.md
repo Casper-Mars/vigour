@@ -117,7 +117,18 @@
 > thrift框架和netty框架结合。需要理解thrift的架构是怎样的，在那个点的功能可以由netty进行代理。
 经过粗糙的理解，thrift定义了transport的概念负责底层的socket操作的，从这个点出发，用netty进行代理transport就可以实现结合两个框架
 
+## change log
 
+>只有重大的逻辑变更才会记录在这里
+
+### 客户端变更
+
+* 2020-06-24
+```
+原来的客户端是使用原生的thrift客户端进行rpc通讯的。当搭配eureka使用的时候，需要对eureka监听到的服务刷新事件进行处理。底层需要维护一套在线可用的transport列表
+经过netty化后的客户端，可以减少维护成本，服务的可用只需根据netty的链接状态即可维护，此时的eureka更多的只是作为一个服务信息增量提供的中间件。
+
+```
 
 
 [client-core-image]:./info/client-core.png
