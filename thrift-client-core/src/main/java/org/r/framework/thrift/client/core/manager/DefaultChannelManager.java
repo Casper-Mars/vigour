@@ -44,8 +44,13 @@ public class DefaultChannelManager implements ChannelManager, Subscriber<Channel
         int signature = getSignature(ip, port);
         ChannelWrapper channelWrapper = channels.get(signature);
         if (channelWrapper == null) {
-            channelWrapper = buildChannel(ip, port);
-            channels.put(signature, channelWrapper);
+            synchronized (this) {
+                channelWrapper = channels.get(signature);
+                if (channelWrapper == null) {
+                    channelWrapper = buildChannel(ip, port);
+                    channels.put(signature, channelWrapper);
+                }
+            }
         }
         return channelWrapper.getChannel();
     }
