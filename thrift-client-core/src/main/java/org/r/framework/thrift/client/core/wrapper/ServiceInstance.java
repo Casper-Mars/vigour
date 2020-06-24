@@ -15,7 +15,7 @@ public class ServiceInstance {
 
     public ServiceInstance(ServiceWrapper serviceWrapper, ThriftClientFactory thriftClientFactory) {
         this.serviceWrapper = serviceWrapper;
-        this.thriftClientFactor y = thriftClientFactory;
+        this.thriftClientFactory = thriftClientFactory;
         this.serviceProxy = new ThreadLocal<>();
     }
 
