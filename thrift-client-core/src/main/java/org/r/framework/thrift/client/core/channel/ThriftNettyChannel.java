@@ -1,19 +1,18 @@
 package org.r.framework.thrift.client.core.channel;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import org.apache.thrift.TException;
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.protocol.TMessage;
-import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.transport.TTransport;
-import org.r.framework.thrift.client.core.ByteBufTransport;
-import org.r.framework.thrift.client.core.thrift.ThriftRequest;
+import org.r.framework.thrift.client.core.thrift.ThriftRequestListener;
+import org.r.framework.thrift.netty.ThriftMessage;
+import org.r.framework.thrift.netty.ThriftTransportType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -25,16 +24,24 @@ public class ThriftNettyChannel extends NioSocketChannel {
 
     private final Logger log = LoggerFactory.getLogger(ThriftNettyChannel.class);
 
-    private final Map<Integer, ThriftRequest> requestMap;
+    private final Map<Integer, ThriftRequestListener> requestMap;
 
-    private final AtomicInteger seqId;
+    private final AtomicInteger requestId;
+
+    /**
+     * 1.使用信号量为了保证底层的tcp数据包能够按照正确的顺序执行，即发-收-确认的三个包完成一次rpc调用。如果没有此信号量控制数据的写入，发送的tcp包就会乱了，导致有些rpc请求完成不了
+     * 2.每写入一个请求的数据，就要等待这个数据返回才能释放信号量。因此，如果服务端无法响应tcp数据包，则信号量无法释放，会导致整个channel挂起
+     * 3.此处应该添加一个计时器
+     */
+    private final Semaphore semaphore;
 
     /**
      * Create a new instance
      */
     public ThriftNettyChannel() {
         this.requestMap = new ConcurrentHashMap<>();
-        this.seqId = new AtomicInteger(1);
+        this.requestId = new AtomicInteger(1);
+        this.semaphore = new Semaphore(1);
     }
 
     /**
@@ -42,11 +49,14 @@ public class ThriftNettyChannel extends NioSocketChannel {
      *
      * @param msg 消息
      */
-    public void onMsgRec(ByteBuf msg) {
-        int seqId = getSeqId(msg);
-        ThriftRequest thriftRequest = requestMap.get(seqId);
-        if (thriftRequest != null) {
-            thriftRequest.put(msg);
+    public void onMsgRec(ThriftMessage msg) {
+        this.semaphore.release();
+        ThriftRequestListener thriftRequestListener = requestMap.get(msg.getRequestId());
+        if (thriftRequestListener != null) {
+            thriftRequestListener.put(msg.getOriginBuf());
+            requestMap.remove(msg.getRequestId());
+        } else {
+            log.error("can not find request[id:{}]", msg.getRequestId());
         }
     }
 
@@ -55,29 +65,16 @@ public class ThriftNettyChannel extends NioSocketChannel {
      *
      * @param msg 消息
      */
-    public ThriftRequest sendMsg(ByteBuf msg) throws Exception {
-        ThriftRequest thriftRequest = new ThriftRequest();
-        int seqId = getSeqId(msg);
-
-        log.info("Send request[seqId:{}][{}:{}]", seqId, this.remoteAddress().getAddress().getHostAddress(), this.remoteAddress().getPort());
-        this.requestMap.put(seqId, thriftRequest);
-        writeAndFlush(msg);
-        return thriftRequest;
+    public void sendMsg(ByteBuf msg, ThriftRequestListener thriftRequestListener) throws Exception {
+        semaphore.acquire();
+        int requestId = getRequestId();
+        this.requestMap.put(requestId, thriftRequestListener);
+        ThriftMessage thriftMessage = new ThriftMessage(msg, ThriftTransportType.FRAMED, requestId);
+        writeAndFlush(thriftMessage.getContent());
     }
 
-    private int getSeqId(ByteBuf byteBuf) {
-        try {
-            byteBuf.markReaderIndex();
-            TTransport tmpTransport = new ByteBufTransport(byteBuf);
-            TProtocol inputProtocol = new TBinaryProtocol(tmpTransport);
-            TMessage message = inputProtocol.readMessageBegin();
-            log.info(message.toString());
-            byteBuf.resetReaderIndex();
-            return message.seqid;
-        } catch (TException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Could not find sequenceId in Thrift message", e);
-        }
+    private int getRequestId() {
+        return this.requestId.getAndIncrement();
     }
 
 }

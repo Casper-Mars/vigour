@@ -14,6 +14,8 @@ import org.apache.thrift.transport.TTransportException;
 import org.r.framework.thrift.netty.NettyTransport;
 import org.r.framework.thrift.netty.ThriftMessage;
 import org.r.framework.thrift.netty.ThriftTransportType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 这里的原生的thrift消息类型分了了两种，一种是frame，一种是unframe。
@@ -29,15 +31,13 @@ import org.r.framework.thrift.netty.ThriftTransportType;
  **/
 public class ThriftProtocolDecoder extends ChannelInboundHandlerAdapter {
 
+    private final Logger log = LoggerFactory.getLogger(ThriftProtocolDecoder.class);
+
     public static final int MESSAGE_FRAME_SIZE = 4;
+    public static final int REQUEST_ID_SIZE = 4;
 
 
-    private long maxFrameSize;
-
-
-    public ThriftProtocolDecoder() {
-        this.maxFrameSize = 64 * 1024 * 1024L;
-    }
+    private final long maxFrameSize;
 
 
     public ThriftProtocolDecoder(long maxFrameSize) {
@@ -47,6 +47,7 @@ public class ThriftProtocolDecoder extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         ThriftMessage message = null;
+        log.info("get a request");
         if (msg instanceof ByteBuf) {
             ByteBuf buffer = (ByteBuf) msg;
 
@@ -65,14 +66,10 @@ public class ThriftProtocolDecoder extends ChannelInboundHandlerAdapter {
                     // protocol id (and thus it is unframed).
                     message = new ThriftMessage(messageBuffer, ThriftTransportType.UNFRAMED);
                 }
-            }else if (buffer.readableBytes() < MESSAGE_FRAME_SIZE){
+            } else if (buffer.readableBytes() < MESSAGE_FRAME_SIZE) {
                 return;
             } else {
-                ByteBuf messageBuffer = tryDecodeFramedMessage(ctx, buffer);
-                if (messageBuffer != null) {
-                    // Messages with a zero MSB in the first byte are framed messages
-                    message = new ThriftMessage(messageBuffer, ThriftTransportType.FRAMED);
-                }
+                message = tryDecodeFramedMessage(ctx, buffer);
             }
 
         }
@@ -83,8 +80,8 @@ public class ThriftProtocolDecoder extends ChannelInboundHandlerAdapter {
         }
     }
 
-    protected ByteBuf tryDecodeFramedMessage(ChannelHandlerContext ctx,
-                                             ByteBuf buffer) {
+    protected ThriftMessage tryDecodeFramedMessage(ChannelHandlerContext ctx,
+                                                   ByteBuf buffer) {
         // Framed messages are prefixed by the size of the frame (which doesn't include the
         // framing itself).
 
@@ -93,13 +90,17 @@ public class ThriftProtocolDecoder extends ChannelInboundHandlerAdapter {
 
         /*
          * 第一个可读位置的4个字节代表的整形数是指这个frame的大小，这个4个字节不应该计算在数据中，应该排除出来。
-         * 所以消息数据的开始位置是第一个可读位置偏移4个字节
+         * 第二个整形数是请求的id，也是应该排除出来的
+         * 所以消息数据的开始位置是第一个可读位置偏移8个字节
+         *
+         *
+         *
          * */
-        messageContentsOffset = messageStartReaderIndex + MESSAGE_FRAME_SIZE;
+        messageContentsOffset = messageStartReaderIndex + MESSAGE_FRAME_SIZE + REQUEST_ID_SIZE;
 
         /*这个消息的大小是有效消息大小和有效消息大小指示量的大小之和，单位值字节*/
         int messageLength = buffer.getInt(messageStartReaderIndex) + MESSAGE_FRAME_SIZE;
-        /**/
+        /*真正的消息的大小*/
         int messageContentsLength = messageStartReaderIndex + messageLength - messageContentsOffset;
 
         if (messageContentsLength > maxFrameSize) {
@@ -118,11 +119,16 @@ public class ThriftProtocolDecoder extends ChannelInboundHandlerAdapter {
             return null;
         } else {
             // Full message is available, return it
+            int requestId = buffer.getInt(messageStartReaderIndex + MESSAGE_FRAME_SIZE);
             ByteBuf messageBuffer = extractFrame(buffer,
                     messageContentsOffset,
                     messageContentsLength);
             buffer.readerIndex(messageStartReaderIndex + messageLength);
-            return messageBuffer;
+            if (messageBuffer == null) {
+                return null;
+            }
+            log.info("get request[id:{} size:{}]", requestId, messageBuffer.readableBytes());
+            return new ThriftMessage(messageBuffer, ThriftTransportType.FRAMED, requestId);
         }
     }
 

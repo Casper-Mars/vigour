@@ -202,6 +202,7 @@ public class MessageDispatcher extends ChannelInboundHandlerAdapter {
                                ThriftMessage response,
                                int responseSequenceId,
                                boolean isOrderedResponsesRequired) {
+        log.info("send response to request[id:{}]", response.getRequestId());
         if (isOrderedResponsesRequired) {
             writeResponseInOrder(ctx, response, responseSequenceId);
         } else {
@@ -271,7 +272,6 @@ public class MessageDispatcher extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof ThriftMessage) {
-            log.info("dispatch msg...........................");
             ThriftMessage message = (ThriftMessage) msg;
             message.setProcessStartTimeMillis(System.currentTimeMillis());
             checkResponseOrderingRequirements(ctx, message);

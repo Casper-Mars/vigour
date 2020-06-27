@@ -5,6 +5,8 @@ import io.netty.buffer.Unpooled;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.r.framework.thrift.client.core.channel.ThriftNettyChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeoutException;
@@ -20,10 +22,11 @@ import java.util.concurrent.TimeoutException;
  **/
 public class NettyTransport extends TTransport {
 
+    private final Logger log = LoggerFactory.getLogger(NettyTransport.class);
 
     private final ThriftNettyChannel channel;
     private ByteBuf respondBuf;
-    private final LinkedBlockingQueue<ThriftRequest> requestQueue;
+    private final LinkedBlockingQueue<ThriftRequestListener> requestQueue;
     private final ByteBuf innerBuffer;
 
     public NettyTransport(ThriftNettyChannel channel) {
@@ -73,8 +76,11 @@ public class NettyTransport extends TTransport {
 
         if (respondBuf == null || !respondBuf.isReadable()) {
             try {
-                ThriftRequest poll = requestQueue.take();
+                ThriftRequestListener poll = requestQueue.take();
                 respondBuf = poll.get();
+                if (respondBuf == null) {
+                    throw new TTransportException();
+                }
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 throw new TTransportException();
@@ -111,10 +117,11 @@ public class NettyTransport extends TTransport {
      */
     @Override
     public void flush() throws TTransportException {
-
+        System.out.println(this.toString()+"send msg");
         try {
-            ThriftRequest thriftRequest = channel.sendMsg(innerBuffer.copy());
-            requestQueue.add(thriftRequest);
+            ThriftRequestListener thriftRequestListener = new ThriftRequestListener();
+            requestQueue.add(thriftRequestListener);
+            channel.sendMsg(innerBuffer.copy(), thriftRequestListener);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -37,9 +37,9 @@ public class ThriftProtocolEncoder extends MessageToByteEncoder<ThriftMessage> {
      */
     @Override
     protected void encode(ChannelHandlerContext ctx, ThriftMessage message, ByteBuf out) throws Exception {
-        int frameSize = message.getBuffer().readableBytes();
+        int frameSize = message.getOriginBuf().readableBytes();
 
-        if (message.getBuffer().readableBytes() > maxFrameSize) {
+        if (message.getOriginBuf().readableBytes() > maxFrameSize) {
             ctx.fireExceptionCaught(new TooLongFrameException(
                     String.format(
                             "Frame size exceeded on encode: frame was %d bytes, maximum allowed is %d bytes",
@@ -50,13 +50,16 @@ public class ThriftProtocolEncoder extends MessageToByteEncoder<ThriftMessage> {
 
         switch (message.getTransportType()) {
             case UNFRAMED:
-                out.writeBytes(message.getBuffer());
+                out.writeBytes(message.getOriginBuf());
                 break;
             case FRAMED:
+                /*写入有效消息的长度*/
                 ByteBuf frameSizeBuffer = PooledByteBufAllocator.DEFAULT.buffer(4);
-                frameSizeBuffer.writeInt(message.getBuffer().readableBytes());
+                ByteBuf content = message.getContent();
+                frameSizeBuffer.writeInt(content.readableBytes());
                 out.writeBytes(frameSizeBuffer);
-                out.writeBytes(message.getBuffer());
+                /*写入有效消息*/
+                out.writeBytes(content);
                 break;
             default:
                 throw new UnsupportedOperationException("Unrecognized transport type");

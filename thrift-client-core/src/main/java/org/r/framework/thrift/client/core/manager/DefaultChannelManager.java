@@ -43,6 +43,7 @@ public class DefaultChannelManager implements ChannelManager, Subscriber<Channel
     public ThriftNettyChannel getChannel(String ip, int port) throws ChannelOpenFailException {
         int signature = getSignature(ip, port);
         ChannelWrapper channelWrapper = channels.get(signature);
+//        ChannelWrapper channelWrapper = channels.get(signature);
         if (channelWrapper == null) {
             synchronized (this) {
                 channelWrapper = channels.get(signature);

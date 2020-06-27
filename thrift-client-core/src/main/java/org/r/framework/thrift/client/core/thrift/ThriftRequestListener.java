@@ -12,14 +12,14 @@ import java.util.concurrent.TimeoutException;
  *
  * @author casper
  **/
-public class ThriftRequest {
+public class ThriftRequestListener {
 
     /**
      * 内部同步对象
      */
     private final SettableFuture<ByteBuf> innerObject;
 
-    public ThriftRequest() {
+    public ThriftRequestListener() {
         innerObject = SettableFuture.create();
     }
 
@@ -31,8 +31,8 @@ public class ThriftRequest {
      */
     public ByteBuf get() throws TimeoutException {
         try {
-//            return innerObject.get();
-            return innerObject.get(10, TimeUnit.SECONDS);
+            return innerObject.get();
+//            return innerObject.get(10, TimeUnit.SECONDS);
         } catch (ExecutionException | InterruptedException e) {
             e.printStackTrace();
         }

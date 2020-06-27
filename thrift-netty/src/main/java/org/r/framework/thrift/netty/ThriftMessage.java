@@ -18,35 +18,66 @@ package org.r.framework.thrift.netty;
 
 import io.netty.buffer.ByteBuf;
 
-public class ThriftMessage
-{
-    private final ByteBuf buffer;
+public class ThriftMessage {
+
+    private final ByteBuf originBuf;
     private final ThriftTransportType transportType;
     private long processStartTimeMillis;
+    private final Integer requestId;
+    private ByteBuf contentBuf;
 
-    public ThriftMessage(ByteBuf buffer, ThriftTransportType transportType)
-    {
-        this.buffer = buffer;
+
+    public ThriftMessage(ByteBuf originBuf, ThriftTransportType transportType) {
+        this(originBuf, transportType, null);
+    }
+
+    public ThriftMessage(ByteBuf originBuf, ThriftTransportType transportType, Integer requestId) {
+        this.originBuf = originBuf;
         this.transportType = transportType;
+        this.requestId = requestId;
     }
 
-    public ByteBuf getBuffer()
-    {
-        return buffer;
+    public ByteBuf getOriginBuf() {
+        return originBuf;
     }
 
-    public ThriftTransportType getTransportType()
-    {
+    public Integer getRequestId() {
+        return requestId;
+    }
+
+    public ThriftTransportType getTransportType() {
         return transportType;
     }
 
+
     /**
-     * 获取构建消息体的工厂，工厂负责产生和此消息的传输类型一样的消息体
+     * 获取消息的字节数据，包括原始的thrift数据和请求的id
+     *
      * @return
      */
-    public Factory getMessageFactory()
-    {
-        return messageBuffer -> new ThriftMessage(messageBuffer, getTransportType());
+    public ByteBuf getContent() {
+        if (contentBuf == null) {
+            synchronized (this) {
+                if (contentBuf == null) {
+                    contentBuf = originBuf.alloc()
+                            .buffer(ThriftMessageConstants.MESSAGE_REQUEST_ID_SIZE + originBuf.readableBytes())
+                            .writeInt(requestId)
+                            .writeBytes(originBuf);
+                    originBuf.resetReaderIndex();
+                }
+            }
+        }
+        return contentBuf;
+    }
+
+
+    /**
+     * 获取构建消息体的工厂，工厂负责产生和此消息的传输类型一样的消息体
+     *
+     * @return
+     */
+    public Factory getMessageFactory() {
+        return messageBuffer -> new ThriftMessage(messageBuffer, getTransportType(), requestId);
     }
 
     /**
@@ -58,20 +89,19 @@ public class ThriftMessage
      *
      * @return {@code true} if ordered responses are required
      */
-    public boolean isOrderedResponsesRequired()
-    {
-        return true;
+    public boolean isOrderedResponsesRequired() {
+        return false;
     }
 
-    public long getProcessStartTimeMillis() { return processStartTimeMillis; }
+    public long getProcessStartTimeMillis() {
+        return processStartTimeMillis;
+    }
 
-    public void setProcessStartTimeMillis(long processStartTimeMillis)
-    {
+    public void setProcessStartTimeMillis(long processStartTimeMillis) {
         this.processStartTimeMillis = processStartTimeMillis;
     }
 
-    public interface Factory
-    {
+    public interface Factory {
         ThriftMessage create(ByteBuf messageBuffer);
     }
 }

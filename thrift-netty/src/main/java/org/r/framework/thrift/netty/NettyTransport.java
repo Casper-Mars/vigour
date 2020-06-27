@@ -54,7 +54,7 @@ public class NettyTransport extends TTransport {
 
     public NettyTransport(Channel channel, ThriftMessage message)
     {
-        this(channel, message.getBuffer(), message.getTransportType());
+        this(channel, message.getOriginBuf(), message.getTransportType());
     }
 
     @Override
