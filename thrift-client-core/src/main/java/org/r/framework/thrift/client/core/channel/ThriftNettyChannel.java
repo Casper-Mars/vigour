@@ -50,7 +50,7 @@ public class ThriftNettyChannel extends NioSocketChannel {
      * @param msg 消息
      */
     public void onMsgRec(ThriftMessage msg) {
-        this.semaphore.release();
+//        this.semaphore.release();
         ThriftRequestListener thriftRequestListener = requestMap.get(msg.getRequestId());
         if (thriftRequestListener != null) {
             thriftRequestListener.put(msg.getOriginBuf());
@@ -66,11 +66,11 @@ public class ThriftNettyChannel extends NioSocketChannel {
      * @param msg 消息
      */
     public void sendMsg(ByteBuf msg, ThriftRequestListener thriftRequestListener) throws Exception {
-        semaphore.acquire();
+//        semaphore.acquire();
         int requestId = getRequestId();
         this.requestMap.put(requestId, thriftRequestListener);
         ThriftMessage thriftMessage = new ThriftMessage(msg, ThriftTransportType.FRAMED, requestId);
-        writeAndFlush(thriftMessage.getContent());
+        writeAndFlush(thriftMessage.getContent()).syncUninterruptibly();
     }
 
     private int getRequestId() {

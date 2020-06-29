@@ -117,7 +117,6 @@ public class NettyTransport extends TTransport {
      */
     @Override
     public void flush() throws TTransportException {
-        System.out.println(this.toString()+"send msg");
         try {
             ThriftRequestListener thriftRequestListener = new ThriftRequestListener();
             requestQueue.add(thriftRequestListener);

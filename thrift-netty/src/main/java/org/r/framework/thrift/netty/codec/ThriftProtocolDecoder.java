@@ -96,10 +96,10 @@ public class ThriftProtocolDecoder extends ChannelInboundHandlerAdapter {
          *
          *
          * */
-        messageContentsOffset = messageStartReaderIndex + MESSAGE_FRAME_SIZE + REQUEST_ID_SIZE;
+        messageContentsOffset = messageStartReaderIndex + REQUEST_ID_SIZE;
 
         /*这个消息的大小是有效消息大小和有效消息大小指示量的大小之和，单位值字节*/
-        int messageLength = buffer.getInt(messageStartReaderIndex) + MESSAGE_FRAME_SIZE;
+        int messageLength = buffer.readableBytes();
         /*真正的消息的大小*/
         int messageContentsLength = messageStartReaderIndex + messageLength - messageContentsOffset;
 
@@ -119,7 +119,7 @@ public class ThriftProtocolDecoder extends ChannelInboundHandlerAdapter {
             return null;
         } else {
             // Full message is available, return it
-            int requestId = buffer.getInt(messageStartReaderIndex + MESSAGE_FRAME_SIZE);
+            int requestId = buffer.getInt(messageStartReaderIndex);
             ByteBuf messageBuffer = extractFrame(buffer,
                     messageContentsOffset,
                     messageContentsLength);

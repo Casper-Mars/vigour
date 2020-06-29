@@ -7,6 +7,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import org.r.framework.thrift.netty.ThriftChannelInitializer;
 import org.r.framework.thrift.netty.codec.ThriftProtocolDecoder;
 import org.r.framework.thrift.netty.codec.ThriftProtocolEncoder;
@@ -21,6 +22,19 @@ import org.r.framework.thrift.server.core.wrapper.ServerDef;
  */
 public class NettyServer implements ServerDelegate {
 
+    // TFramedTransport framing appears at the front of the message
+    private static final int LENGTH_FIELD_OFFSET = 0;
+
+    // TFramedTransport framing is four bytes long
+    private static final int LENGTH_FIELD_LENGTH = 4;
+
+    // TFramedTransport framing represents message size *not including* framing so no adjustment
+    // is necessary
+    private static final int LENGTH_ADJUSTMENT = 0;
+
+    // The client expects to see only the message *without* any framing, this strips it off
+    private static final int INITIAL_BYTES_TO_STRIP = LENGTH_FIELD_LENGTH;
+
 
     @Override
     public void start(ServerDef serverDef) {
@@ -33,6 +47,13 @@ public class NettyServer implements ServerDelegate {
             @Override
             protected void initChannel(NioSocketChannel ch) throws Exception {
                 ch.pipeline()
+                        .addLast("frameDecode", new LengthFieldBasedFrameDecoder(
+                                serverDef.getMaxFrameSize(),
+                                LENGTH_FIELD_OFFSET,
+                                LENGTH_FIELD_LENGTH,
+                                LENGTH_ADJUSTMENT,
+                                INITIAL_BYTES_TO_STRIP
+                        ))
                         .addLast("thriftDecoder", new ThriftProtocolDecoder(serverDef.getMaxFrameSize()))
                         .addLast("thriftEncoder", new ThriftProtocolEncoder(serverDef.getMaxFrameSize()))
                         .addLast(ConnectHandler.class.getSimpleName(), new ConnectHandler())

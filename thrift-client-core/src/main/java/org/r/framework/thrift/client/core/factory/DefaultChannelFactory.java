@@ -51,7 +51,6 @@ public class DefaultChannelFactory implements ChannelFactory {
                 ChannelPipeline pipeline = ch.pipeline();
                 pipeline
                         .addLast("connectHandler", new ThriftServerConnectHandler(postman.getMailBox()))
-                        .addLast("frameEncode", new LengthFieldPrepender(LENGTH_FIELD_LENGTH))
                         .addLast("frameDecode", new LengthFieldBasedFrameDecoder(
                                 configProperties.getMaxFrameSize(),
                                 LENGTH_FIELD_OFFSET,
@@ -59,6 +58,7 @@ public class DefaultChannelFactory implements ChannelFactory {
                                 LENGTH_ADJUSTMENT,
                                 INITIAL_BYTES_TO_STRIP
                         ))
+                        .addLast("frameEncode", new LengthFieldPrepender(LENGTH_FIELD_LENGTH))
                         .addLast("thriftAdapter", new ThriftChannelHandler());
             }
         });
