@@ -9,7 +9,6 @@ import org.r.framework.thrift.client.core.manager.DefaultServerManager;
 import org.r.framework.thrift.client.core.manager.ServerManager;
 import org.r.framework.thrift.client.core.provider.ServiceInfoProvider;
 import org.r.framework.thrift.netty.events.ChannelConnectEvent;
-import org.r.framework.thrift.netty.events.ChannelConnectionCloseEvent;
 import org.r.framework.thrift.netty.events.Postman;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;

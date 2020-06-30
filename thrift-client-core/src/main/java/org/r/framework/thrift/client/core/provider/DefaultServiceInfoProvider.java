@@ -15,7 +15,7 @@ import java.util.*;
  */
 public class DefaultServiceInfoProvider implements ServiceInfoProvider {
 
-    private final Logger log = LoggerFactory.getLogger(DefaultProtocolProvider.class);
+    private final Logger log = LoggerFactory.getLogger(DefaultServiceInfoProvider.class);
 
 
     private final List<ServiceWrapper> serviceWrappers;

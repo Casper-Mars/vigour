@@ -1,6 +1,5 @@
 package org.r.framework.thrift.client.core;
 
-import org.r.framework.thrift.client.core.manager.DefaultServerManager;
 import org.r.framework.thrift.client.core.manager.ServerManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
