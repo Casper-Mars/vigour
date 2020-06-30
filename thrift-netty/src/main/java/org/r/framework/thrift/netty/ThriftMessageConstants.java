@@ -13,4 +13,10 @@ public class ThriftMessageConstants {
     public static final int MESSAGE_REQUEST_ID_SIZE = 4;
 
 
+    /**
+     * thrift协议帧的长度变量是4个字节的整形，此常量是指这个长度变量的字节数
+     */
+    public static final int LENGTH_FIELD_LENGTH = 4;
+
+
 }

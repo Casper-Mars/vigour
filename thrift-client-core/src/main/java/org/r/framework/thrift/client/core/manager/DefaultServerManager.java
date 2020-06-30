@@ -1,12 +1,12 @@
 package org.r.framework.thrift.client.core.manager;
 
-import org.r.framework.thrift.client.core.event.ChannelCloseEvent;
 import org.r.framework.thrift.client.core.factory.DefaultThriftClientFactory;
 import org.r.framework.thrift.client.core.factory.ThriftClientFactory;
-import org.r.framework.thrift.client.core.observer.Postman;
 import org.r.framework.thrift.client.core.observer.ServiceObserver;
 import org.r.framework.thrift.client.core.provider.ServiceInfoProvider;
 import org.r.framework.thrift.client.core.wrapper.ServiceWrapper;
+import org.r.framework.thrift.netty.events.ChannelConnectEvent;
+import org.r.framework.thrift.netty.events.Postman;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
@@ -40,9 +40,9 @@ public class DefaultServerManager implements ServiceObserver, ServerManager {
      */
     private final ThriftClientFactory thriftClientFactory;
 
-    private final Postman<ChannelCloseEvent> postman;
+    private final Postman<ChannelConnectEvent> postman;
 
-    public DefaultServerManager(ServiceInfoProvider serviceInfoProvider, ChannelManager channelManager, Postman<ChannelCloseEvent> postman) {
+    public DefaultServerManager(ServiceInfoProvider serviceInfoProvider, ChannelManager channelManager, Postman<ChannelConnectEvent> postman) {
         this.serviceInfoProvider = serviceInfoProvider;
         serviceInfoProvider.addObserver(this);
         this.services = new HashMap<>();

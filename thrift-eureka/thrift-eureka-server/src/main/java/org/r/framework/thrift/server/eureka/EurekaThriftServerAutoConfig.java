@@ -1,7 +1,7 @@
 package org.r.framework.thrift.server.eureka;
 
-import org.r.framework.thrift.server.core.provider.ServerInfoProvider;
 import org.r.framework.thrift.server.eureka.provider.ServerMetaDataProvider;
+import org.r.framework.thrift.server.springboot.starter.provider.ServerInfoProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

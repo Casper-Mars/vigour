@@ -1,7 +1,7 @@
 package org.r.framework.thrift.client.core.factory;
 
-import org.r.framework.thrift.client.core.channel.ThriftNettyChannel;
 import org.r.framework.thrift.client.core.exception.ChannelOpenFailException;
+import org.r.framework.thrift.netty.codec.ThriftClientChannel;
 
 /**
  * @author casper
@@ -17,7 +17,7 @@ public interface ChannelFactory {
      * @param port 远程进程端口
      * @return
      */
-    ThriftNettyChannel build(String ip, int port) throws ChannelOpenFailException;
+    ThriftClientChannel build(String ip, int port) throws ChannelOpenFailException;
 
 
 }

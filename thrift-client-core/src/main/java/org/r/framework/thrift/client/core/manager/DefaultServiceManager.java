@@ -1,11 +1,12 @@
 package org.r.framework.thrift.client.core.manager;
 
-import org.r.framework.thrift.client.core.event.ChannelCloseEvent;
 import org.r.framework.thrift.client.core.exception.ChannelOpenFailException;
 import org.r.framework.thrift.client.core.factory.ThriftClientFactory;
-import org.r.framework.thrift.client.core.observer.Subscriber;
 import org.r.framework.thrift.client.core.wrapper.ServiceInstance;
 import org.r.framework.thrift.client.core.wrapper.ServiceWrapper;
+import org.r.framework.thrift.netty.events.ChannelConnectEvent;
+import org.r.framework.thrift.netty.events.ChannelConnectionCloseEvent;
+import org.r.framework.thrift.netty.events.Subscriber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @author casper
  */
-public class DefaultServiceManager implements ServiceManager, Subscriber<ChannelCloseEvent> {
+public class DefaultServiceManager implements ServiceManager, Subscriber<ChannelConnectEvent> {
 
     private final Logger log = LoggerFactory.getLogger(DefaultServiceManager.class);
 
@@ -123,17 +124,6 @@ public class DefaultServiceManager implements ServiceManager, Subscriber<Channel
     }
 
     /**
-     * 读邮件
-     *
-     * @param mail 邮件
-     */
-    @Override
-    public void readMail(ChannelCloseEvent mail) {
-        this.serviceList.removeIf(t -> t.getPort() == mail.getPort() && t.getIp().equals(mail.getIp()));
-        this.instanceHashValue.remove(getInstanceHashValue(mail.getIp(), mail.getPort()));
-    }
-
-    /**
      * 获取实例的hash值
      *
      * @param ip   ip地址
@@ -145,4 +135,18 @@ public class DefaultServiceManager implements ServiceManager, Subscriber<Channel
     }
 
 
+    /**
+     * 读邮件
+     *
+     * @param mail 邮件
+     */
+    @Override
+    public void readMail(ChannelConnectEvent mail) {
+        if(mail instanceof ChannelConnectionCloseEvent){
+            ChannelConnectionCloseEvent tmp = (ChannelConnectionCloseEvent)mail;
+            this.serviceList.removeIf(t -> t.getPort() == tmp.getPort() && t.getIp().equals(tmp.getIp()));
+            this.instanceHashValue.remove(getInstanceHashValue(tmp.getIp(), tmp.getPort()));
+
+        }
+    }
 }

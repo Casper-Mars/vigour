@@ -1,11 +1,12 @@
 package org.r.framework.thrift.client.core.manager;
 
-import org.r.framework.thrift.client.core.channel.ThriftNettyChannel;
-import org.r.framework.thrift.client.core.event.ChannelCloseEvent;
 import org.r.framework.thrift.client.core.exception.ChannelOpenFailException;
 import org.r.framework.thrift.client.core.factory.ChannelFactory;
-import org.r.framework.thrift.client.core.observer.Subscriber;
 import org.r.framework.thrift.client.core.wrapper.ChannelWrapper;
+import org.r.framework.thrift.netty.codec.ThriftClientChannel;
+import org.r.framework.thrift.netty.events.ChannelConnectEvent;
+import org.r.framework.thrift.netty.events.ChannelConnectionCloseEvent;
+import org.r.framework.thrift.netty.events.Subscriber;
 
 import java.util.Map;
 import java.util.Objects;
@@ -16,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author casper
  **/
-public class DefaultChannelManager implements ChannelManager, Subscriber<ChannelCloseEvent> {
+public class DefaultChannelManager implements ChannelManager, Subscriber<ChannelConnectEvent> {
 
 
     private final Map<Integer, ChannelWrapper> channels;
@@ -40,7 +41,7 @@ public class DefaultChannelManager implements ChannelManager, Subscriber<Channel
      * @return
      */
     @Override
-    public ThriftNettyChannel getChannel(String ip, int port) throws ChannelOpenFailException {
+    public ThriftClientChannel getChannel(String ip, int port) throws ChannelOpenFailException {
         int signature = getSignature(ip, port);
         ChannelWrapper channelWrapper = channels.get(signature);
 //        ChannelWrapper channelWrapper = channels.get(signature);
@@ -86,8 +87,11 @@ public class DefaultChannelManager implements ChannelManager, Subscriber<Channel
      * @param mail 邮件
      */
     @Override
-    public void readMail(ChannelCloseEvent mail) {
-        int signature = getSignature(mail.getIp(), mail.getPort());
-        this.channels.remove(signature);
+    public void readMail(ChannelConnectEvent mail) {
+        if (mail instanceof ChannelConnectionCloseEvent) {
+            ChannelConnectionCloseEvent tmp = (ChannelConnectionCloseEvent) mail;
+            int signature = getSignature(tmp.getIp(), tmp.getPort());
+            this.channels.remove(signature);
+        }
     }
 }

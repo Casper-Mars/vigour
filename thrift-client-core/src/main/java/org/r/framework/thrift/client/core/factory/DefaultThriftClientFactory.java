@@ -6,7 +6,7 @@ import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TTransport;
 import org.r.framework.thrift.client.core.exception.ChannelOpenFailException;
 import org.r.framework.thrift.client.core.manager.ChannelManager;
-import org.r.framework.thrift.client.core.thrift.NettyTransport;
+import org.r.framework.thrift.netty.client.ClientNettyTransport;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -50,7 +50,7 @@ public class DefaultThriftClientFactory implements ThriftClientFactory {
      */
     @Override
     public TTransport buildTransport(String ip, int port) throws ChannelOpenFailException {
-        return new NettyTransport(channelManager.getChannel(ip,port));
+        return new ClientNettyTransport(channelManager.getChannel(ip,port));
     }
 
     /**

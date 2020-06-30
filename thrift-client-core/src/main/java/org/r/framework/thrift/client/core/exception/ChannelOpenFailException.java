@@ -1,7 +1,5 @@
 package org.r.framework.thrift.client.core.exception;
 
-import java.security.PrivilegedActionException;
-
 /**
  * date 2020/6/23 下午2:12
  *

@@ -19,6 +19,7 @@
         <module>thrift-server-core</module>
         <module>thrift-netty</module>
         <module>test</module>
+        <module>thrift-server-springboot-starter</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -108,6 +109,11 @@
             <dependency>
                 <groupId>org.r.framework</groupId>
                 <artifactId>thrift-eureka-server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.r.framework</groupId>
+                <artifactId>thrift-server-springboot-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

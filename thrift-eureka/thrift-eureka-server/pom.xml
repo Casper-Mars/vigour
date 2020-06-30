@@ -15,7 +15,7 @@
     <dependencies>
         <dependency>
             <groupId>org.r.framework</groupId>
-            <artifactId>thrift-server-core</artifactId>
+            <artifactId>thrift-server-springboot-starter</artifactId>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>

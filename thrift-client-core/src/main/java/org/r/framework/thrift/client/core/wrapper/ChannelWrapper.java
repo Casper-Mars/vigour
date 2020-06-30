@@ -1,6 +1,7 @@
 package org.r.framework.thrift.client.core.wrapper;
 
-import org.r.framework.thrift.client.core.channel.ThriftNettyChannel;
+
+import org.r.framework.thrift.netty.codec.ThriftClientChannel;
 
 import java.util.Objects;
 
@@ -11,19 +12,19 @@ import java.util.Objects;
  **/
 public class ChannelWrapper {
 
-    private final ThriftNettyChannel channel;
+    private final ThriftClientChannel channel;
 
     private final String ip;
 
     private final int port;
 
-    public ChannelWrapper(ThriftNettyChannel channel, String ip, int port) {
+    public ChannelWrapper(ThriftClientChannel channel, String ip, int port) {
         this.channel = channel;
         this.ip = ip;
         this.port = port;
     }
 
-    public ThriftNettyChannel getChannel() {
+    public ThriftClientChannel getChannel() {
         return channel;
     }
 
