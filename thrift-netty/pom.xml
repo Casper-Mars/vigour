@@ -14,20 +14,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.thrift</groupId>
-            <artifactId>libthrift</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.r.framework</groupId>
-            <artifactId>thrift-common</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
+            <artifactId>thrift-netty-core</artifactId>
         </dependency>
     </dependencies>
 

@@ -2,8 +2,8 @@ package org.r.framework.thrift.server.eureka.provider;
 
 import com.alibaba.fastjson.JSONObject;
 import org.r.framework.thrift.common.Constants;
-import org.r.framework.thrift.server.springboot.starter.provider.ServerInfoProvider;
-import org.r.framework.thrift.server.springboot.starter.wrapper.ServiceBeanWrapper;
+import org.r.framework.thrift.springboot.starter.provider.ServerInfoProvider;
+import org.r.framework.thrift.springboot.starter.wrapper.ServiceBeanWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.netflix.eureka.EurekaInstanceConfigBean;

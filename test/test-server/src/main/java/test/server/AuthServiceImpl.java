@@ -1,7 +1,7 @@
 package test.server;
 
 import org.apache.thrift.TException;
-import org.r.framework.thrift.server.springboot.starter.annotation.ThriftService;
+import org.r.framework.thrift.springboot.starter.annotation.ThriftService;
 import test.iface.service.AuthService;
 
 /**

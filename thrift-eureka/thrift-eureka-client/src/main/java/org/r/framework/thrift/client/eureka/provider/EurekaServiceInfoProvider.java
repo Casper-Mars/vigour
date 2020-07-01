@@ -4,10 +4,10 @@ import com.alibaba.fastjson.JSONObject;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
-import org.r.framework.thrift.client.core.observer.ServiceObserver;
-import org.r.framework.thrift.client.core.provider.ServiceInfoProvider;
-import org.r.framework.thrift.client.core.wrapper.ServiceWrapper;
 import org.r.framework.thrift.common.Constants;
+import org.r.framework.thrift.netty.observer.ServiceObserver;
+import org.r.framework.thrift.netty.provider.ServiceInfoProvider;
+import org.r.framework.thrift.netty.wrapper.ServiceWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

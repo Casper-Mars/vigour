@@ -1,7 +1,7 @@
 package org.r.framework.thrift.client.eureka;
 
 import org.r.framework.thrift.client.eureka.provider.EurekaServiceInfoProvider;
-import org.r.framework.thrift.client.core.provider.ServiceInfoProvider;
+import org.r.framework.thrift.netty.provider.ServiceInfoProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.client.discovery.event.HeartbeatEvent;

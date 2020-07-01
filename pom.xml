@@ -2,24 +2,23 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.2.6.RELEASE</version>
-        <relativePath/> <!-- lookup parent from repository -->
-    </parent>
+<!--    <parent>-->
+<!--        <groupId>org.springframework.boot</groupId>-->
+<!--        <artifactId>spring-boot-starter-parent</artifactId>-->
+<!--        <version>2.2.6.RELEASE</version>-->
+<!--        <relativePath/> &lt;!&ndash; lookup parent from repository &ndash;&gt;-->
+<!--    </parent>-->
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.r.framework</groupId>
     <artifactId>thrift</artifactId>
     <version>1.0</version>
     <modules>
-        <module>thrift-client-core</module>
         <module>thrift-common</module>
         <module>thrift-eureka</module>
-        <module>thrift-server-core</module>
         <module>thrift-netty</module>
         <module>test</module>
-        <module>thrift-server-springboot-starter</module>
+        <module>thrift-springboot-starter</module>
+        <module>thrift-netty-core</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -93,16 +92,6 @@
             </dependency>
             <dependency>
                 <groupId>org.r.framework</groupId>
-                <artifactId>thrift-client-core</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.r.framework</groupId>
-                <artifactId>thrift-server-core</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.r.framework</groupId>
                 <artifactId>thrift-eureka-client</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -113,10 +102,28 @@
             </dependency>
             <dependency>
                 <groupId>org.r.framework</groupId>
-                <artifactId>thrift-server-springboot-starter</artifactId>
+                <artifactId>thrift-springboot-starter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.r.framework</groupId>
+                <artifactId>thrift-netty-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

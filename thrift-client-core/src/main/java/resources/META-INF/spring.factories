@@ -1,1 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=org.r.framework.thrift.client.core.ThriftClientAutoConfig
