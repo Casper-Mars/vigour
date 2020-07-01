@@ -14,17 +14,17 @@
     <dependencies>
         <dependency>
             <groupId>org.r.framework</groupId>
-            <artifactId>thrift-eureka-server</artifactId>
+            <artifactId>thrift-springboot-starter</artifactId>
         </dependency>
         <dependency>
             <groupId>org.r.framework</groupId>
             <artifactId>test-iface</artifactId>
             <version>1.0</version>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.cloud</groupId>-->
+<!--            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>-->
+<!--        </dependency>-->
     </dependencies>
 
     <build>

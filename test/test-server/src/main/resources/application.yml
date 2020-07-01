@@ -1,18 +1,20 @@
-thrift:
-  server:
-    enable: true
-    netty:
-      enable: true
-eureka:
-  client:
-    service-url:
-      defaultZone: http://114.55.253.170:13001/eureka
-  instance:
-    prefer-ip-address: true
+#eureka:
+#  client:
+#    service-url:
+#      defaultZone: http://114.55.253.170:13001/eureka
+#  instance:
+#    prefer-ip-address: true
 #    ip-address: 114.55.253.170
 server:
   port: 8081
-
 spring:
   application:
     name: test-thrift-server
+thrift:
+  server:
+    port: 8080
+    max-frame-size: 1024
+    enable: true
+    max-connections: 20
+    name: test-server
+    thrift-version: 13

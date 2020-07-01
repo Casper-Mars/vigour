@@ -12,7 +12,7 @@ public class ServerConfig {
     /**
      * 是否启用服务端
      */
-    private boolean enable;
+    private boolean enable = false;
     /**
      * 服务端监听的端口
      */
@@ -28,11 +28,11 @@ public class ServerConfig {
     /**
      * thrift协议帧大小的最大值
      */
-    private int maxFrameSize;
+    private int maxFrameSize = 67108864;
     /**
      * 服务端的最大连接数
      */
-    private int maxConnections;
+    private int maxConnections = 10;
     /**
      * 服务端的netty配置
      */
