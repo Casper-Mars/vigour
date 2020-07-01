@@ -16,12 +16,12 @@ public class NettyConfig {
     /**
      * 工作线程池大小
      */
-    private int workPoolSize;
+    private int workPoolSize = 4;
 
     /**
      * 调度线程池大小
      */
-    private int bossPoolSize;
+    private int bossPoolSize = 1;
 
     public int getWorkPoolSize() {
         return workPoolSize;

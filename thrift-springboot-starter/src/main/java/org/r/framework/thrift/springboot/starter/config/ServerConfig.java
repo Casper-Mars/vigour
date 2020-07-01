@@ -12,7 +12,7 @@ public class ServerConfig {
     /**
      * 是否启用服务端
      */
-    private boolean enable = false;
+    private boolean enable;
     /**
      * 服务端监听的端口
      */
@@ -22,9 +22,9 @@ public class ServerConfig {
      */
     private String name;
     /**
-     * thrift版本号
+     * thrift版本号,暂时没有用
      */
-    private String thriftVersion;
+    private String thriftVersion = "0.13.0";
     /**
      * thrift协议帧大小的最大值
      */
@@ -64,6 +64,9 @@ public class ServerConfig {
     }
 
     public NettyConfig getNetty() {
+        if (netty == null) {
+            netty = new NettyConfig();
+        }
         return netty;
     }
 

@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
  **/
 
 public class ThriftServer implements ServerDelegate {
-    private Logger log = LoggerFactory.getLogger(ThriftServer.class);
+    private final Logger log = LoggerFactory.getLogger(ThriftServer.class);
 
 
     /**
@@ -32,7 +32,7 @@ public class ThriftServer implements ServerDelegate {
             TServer.Args args1 = new TServer.Args(tServerSocket);
             args1.processor(processor);
             TServer server = new TSimpleServer(args1);
-            log.info("server start at " + serverDefinition.getPort());
+            log.info("Server start at {}", serverDefinition.getPort());
             server.serve();
         } catch (TTransportException e) {
             e.printStackTrace();

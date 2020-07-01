@@ -71,6 +71,10 @@ public class ServerDefinition {
 
         ServerDefinition serverDefinition;
 
+        public ServerDefinitionBuilder() {
+            this.serverDefinition = new ServerDefinition();
+        }
+
         public ServerDefinition build() {
             return serverDefinition;
         }
@@ -104,11 +108,13 @@ public class ServerDefinition {
             serverDefinition.businessThreadPool = businessThreadPool;
             return this;
         }
-        public ServerDefinitionBuilder nettyWorkPoolSize(int nettyWorkPoolSize){
+
+        public ServerDefinitionBuilder nettyWorkPoolSize(int nettyWorkPoolSize) {
             serverDefinition.nettyWorkPoolSize = nettyWorkPoolSize;
             return this;
         }
-        public ServerDefinitionBuilder nettyBossPoolSize(int nettyBossPoolSize){
+
+        public ServerDefinitionBuilder nettyBossPoolSize(int nettyBossPoolSize) {
             serverDefinition.nettyBossPoolSize = nettyBossPoolSize;
             return this;
         }

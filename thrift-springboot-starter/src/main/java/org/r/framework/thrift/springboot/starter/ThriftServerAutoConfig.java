@@ -36,7 +36,7 @@ import java.util.List;
  **/
 @Configuration
 @EnableConfigurationProperties(ConfigProperties.class)
-@ConditionalOnProperty(name = "${thrift.server.enable}", havingValue = "true")
+@ConditionalOnProperty(name = "thrift.server.enable", havingValue = "true")
 public class ThriftServerAutoConfig {
 
     private final Logger log = LoggerFactory.getLogger(ThriftServerAutoConfig.class);
@@ -57,6 +57,7 @@ public class ThriftServerAutoConfig {
         for (String s : servicesName) {
             Object bean = applicationContext.getBean(s);
             wrappers.add(new ServiceBeanWrapper(bean));
+            log.info("Found server {}", s);
         }
         return new ServerInfoProvider(port, wrappers);
     }

@@ -7,6 +7,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.r.framework.thrift.netty.core.codec.ThriftServerChannelInitializer;
 import org.r.framework.thrift.netty.wrapper.ServerDefinition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * date 2020/4/30 22:18
@@ -14,6 +16,8 @@ import org.r.framework.thrift.netty.wrapper.ServerDefinition;
  * @author casper
  */
 public class NettyServer implements ServerDelegate {
+
+    private final Logger log = LoggerFactory.getLogger(NettyServer.class);
 
     private Channel channel;
     private EventLoopGroup bossGroup;
@@ -34,7 +38,7 @@ public class NettyServer implements ServerDelegate {
         bootstrap.childHandler(new ThriftServerChannelInitializer(serverDefinition.getMaxFrameSize(), serverDefinition.getProcessor()));
         try {
             channel = bootstrap.bind().sync().channel();
-            System.out.println("server start with netty at " + serverDefinition.getPort());
+            log.info("Server start with netty at {}", serverDefinition.getPort());
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {

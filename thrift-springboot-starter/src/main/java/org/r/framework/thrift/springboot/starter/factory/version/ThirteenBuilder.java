@@ -57,7 +57,7 @@ public class ThirteenBuilder implements ProcessorBuilder {
         }
         try {
             Constructor<TProcessor> processorConstructor = processorClass.getConstructor(interfaceClass);
-            log.info("build a thrift processor with server name: {}",wrapper.getName());
+            log.info("Build a thrift processor with server name: {}",wrapper.getName());
             return BeanUtils.instantiateClass(processorConstructor, wrapper.getBean());
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
