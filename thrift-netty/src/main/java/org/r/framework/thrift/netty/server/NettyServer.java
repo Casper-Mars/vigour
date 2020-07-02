@@ -39,8 +39,9 @@ public class NettyServer implements ServerDelegate {
         try {
             channel = bootstrap.bind().sync().channel();
             log.info("Server start with netty at {}", serverDefinition.getPort());
+            channel.closeFuture().sync();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         } finally {
             workGroup.shutdownGracefully();
             bossGroup.shutdownGracefully();

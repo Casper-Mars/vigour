@@ -1,11 +1,21 @@
-eureka:
-  client:
-    service-url:
-      defaultZone: http://114.55.253.170:13001/eureka
-  instance:
-    prefer-ip-address: true
+#eureka:
+#  client:
+#    service-url:
+#      defaultZone: http://114.55.253.170:13001/eureka
+#  instance:
+#    prefer-ip-address: true
 spring:
   application:
     name: client
 server:
   port: 8080
+
+thrift:
+  client:
+    enable: true
+    server-infos:
+      "localhost-8090": AuthService,LoginService
+    netty:
+      enable: true
+      work-pool-size: 10
+    base-package: test.client

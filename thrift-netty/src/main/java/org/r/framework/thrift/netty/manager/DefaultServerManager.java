@@ -58,7 +58,7 @@ public class DefaultServerManager implements ServiceObserver, ServerManager {
     @Override
     public synchronized void updateClientList() {
 
-        log.info("server list refresh");
+        log.info("Server list refresh");
         /*获取全部的服务实例*/
         List<ServiceWrapper> allServer = serviceInfoProvider.getTargetServer(this.targetServiceList);
         /*提取最新列表的服务名称列表*/
@@ -73,7 +73,7 @@ public class DefaultServerManager implements ServiceObserver, ServerManager {
         }
 
         for (ServiceWrapper serviceWrapper : allServer) {
-            log.info("server:{}[{}:{}] is up", serviceWrapper.getName(), serviceWrapper.getHost(), serviceWrapper.getPort());
+            log.info("Server:{}[{}:{}] is up", serviceWrapper.getName(), serviceWrapper.getHost(), serviceWrapper.getPort());
             ServiceManager ServiceManager = services.get(serviceWrapper.getName());
             if (ServiceManager == null) {
                 ServiceManager = new DefaultServiceManager(serviceWrapper.getName(), this.thriftClientFactory);

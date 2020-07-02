@@ -1,7 +1,6 @@
 package org.r.framework.thrift.springboot.starter;
 
 import org.r.framework.thrift.common.util.ClassTool;
-import org.r.framework.thrift.springboot.starter.annotation.EnableThriftClient;
 import org.r.framework.thrift.springboot.starter.annotation.ThriftClient;
 import org.r.framework.thrift.springboot.starter.factory.ProxyClientBeanFactory;
 import org.slf4j.Logger;
@@ -42,6 +41,11 @@ public class ThriftClientsRegistrar implements ImportBeanDefinitionRegistrar, Re
     private Environment env;
     private ResourceLoader resourceLoader;
 
+    /**
+     * 配置文件配置的基础包扫描路径
+     */
+    private String basePackage;
+
     @Override
     public void setEnvironment(Environment environment) {
         this.env = environment;
@@ -55,11 +59,15 @@ public class ThriftClientsRegistrar implements ImportBeanDefinitionRegistrar, Re
 
     @Override
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
-
-        Map<String, Object> annotationAttributes = importingClassMetadata.getAnnotationAttributes(EnableThriftClient.class.getCanonicalName());
-        if (annotationAttributes == null) {
-            throw new RuntimeException("missing annotation info!!!!");
+        /*
+         * 只有在配置了启用客户端，才进行bean的注册
+         * 客户端的自动装配分开了两个地方，后期再进一步整合一起
+         * */
+        String property = env.getProperty("thrift.client.enable");
+        if (StringUtils.isEmpty(property) || property.equals("false")) {
+            return;
         }
+        basePackage = env.getProperty("thrift.client.base-package");
         registerThriftClient(importingClassMetadata, registry);
     }
 
@@ -69,7 +77,7 @@ public class ThriftClientsRegistrar implements ImportBeanDefinitionRegistrar, Re
         /*获取全部有客户端注解的实现类*/
         Map<String, String> ifaceImplClass = getIfaceImplClass(metadata);
         if (CollectionUtils.isEmpty(ifaceImplClass)) {
-            log.warn("can not find any implement class with annotation ThriftClient");
+            log.warn("Can not find any implement class with annotation ThriftClient");
             return;
         }
         for (Map.Entry<String, String> entry : ifaceImplClass.entrySet()) {
@@ -102,7 +110,7 @@ public class ThriftClientsRegistrar implements ImportBeanDefinitionRegistrar, Re
                     if (StringUtils.isEmpty(serviceName)) {
                         continue;
                     }
-                    log.info("find implement class {} for server {}", className, serviceName);
+                    log.info("Find implement class {} for server {}", className, serviceName);
                     result.put(serviceName, className);
                 }
             }
@@ -148,14 +156,29 @@ public class ThriftClientsRegistrar implements ImportBeanDefinitionRegistrar, Re
         };
     }
 
+    /**
+     * 把被注解的类所在的包加入基础扫描包路径
+     *
+     * @param importingClassMetadata 被注解的信息
+     * @return
+     */
     protected Set<String> getBasePackages(AnnotationMetadata importingClassMetadata) {
         Set<String> basePackages = new HashSet<>();
+        if (!StringUtils.isEmpty(basePackage)) {
+            basePackages.add(basePackage);
+        }
         basePackages.add(ClassUtils.getPackageName(importingClassMetadata.getClassName()));
         return basePackages;
     }
 
+    /**
+     * 从完整的class名称中提取出简易类名，并首字母小写
+     * 例如：从java.lang.String中提取String，
+     *
+     * @param className 完整的类名称
+     * @return
+     */
     private String getServiceName(String className) {
-
         String substring = className.substring(className.lastIndexOf('.') + 1);
         char[] chars = substring.toCharArray();
         chars[0] += 32;

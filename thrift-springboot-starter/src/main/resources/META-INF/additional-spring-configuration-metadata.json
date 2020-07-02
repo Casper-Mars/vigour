@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "thrift.server.max-frame-size",
+      "type": "java.lang.Integer",
+      "description": "thrift协议帧大小最大值."
+    }
+  ]
+}

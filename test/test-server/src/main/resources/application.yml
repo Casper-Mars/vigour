@@ -5,9 +5,12 @@ spring:
     name: test-thrift-server
 thrift:
   server:
-    port: 9090
-    max-frame-size: 1024
+    port: 8090
     enable: true
     max-connections: 20
     name: test-server
     thrift-version: 0.13.0
+    netty:
+      boss-pool-size: 2
+      work-pool-size: 20
+      enable: true

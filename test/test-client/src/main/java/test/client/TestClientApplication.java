@@ -1,9 +1,7 @@
 package test.client;
 
-import org.r.framework.thrift.springboot.starter.annotation.EnableThriftClient;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.context.ConfigurableApplicationContext;
 
 /**
@@ -12,8 +10,6 @@ import org.springframework.context.ConfigurableApplicationContext;
  * @author casper
  **/
 @SpringBootApplication
-@EnableThriftClient
-@EnableEurekaClient
 public class TestClientApplication {
 
 

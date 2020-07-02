@@ -33,7 +33,7 @@ import java.util.Set;
 @EnableConfigurationProperties(ConfigProperties.class)
 @Configuration
 @EnableThriftClient()
-@ConditionalOnProperty(name = "${thrift.client.enable}", havingValue = "true")
+@ConditionalOnProperty(name = "thrift.client.enable", havingValue = "true")
 public class ThriftClientAutoConfig {
 
     private final Logger log = LoggerFactory.getLogger(ThriftClientAutoConfig.class);
@@ -42,7 +42,7 @@ public class ThriftClientAutoConfig {
     @ConditionalOnMissingBean(ChannelManager.class)
     public ChannelManager channelManager(ConfigProperties configProperties) {
         ClientConfig client = configProperties.getClient();
-        return new DefaultChannelManager(client.getMaxFrameSize(), client.getNetty().getWorkPoolSize());
+        return new DefaultChannelManager(client.getNetty().getWorkPoolSize(), client.getMaxFrameSize());
     }
 
     @Bean
@@ -57,7 +57,7 @@ public class ThriftClientAutoConfig {
                  * key的格式为：ip:port
                  * value的格式为：serverName,serverName,......
                  * */
-                String[] ipAndPort = entry.getKey().split(":");
+                String[] ipAndPort = entry.getKey().split("-");
                 if (ipAndPort.length != 2) {
                     log.error("{} server address format incorrect", entry.getKey());
                     continue;
@@ -69,7 +69,7 @@ public class ThriftClientAutoConfig {
                 }
                 String[] serverNames = value.split(",");
                 for (String serverName : serverNames) {
-                    ServiceWrapper serviceWrapper = new ServiceWrapper(ipAndPort[0], Integer.parseInt(ipAndPort[1]), serverName, true);
+                    ServiceWrapper serviceWrapper = new ServiceWrapper(ipAndPort[0], Integer.parseInt(ipAndPort[1]), serverName.trim(), true);
                     serviceList.add(serviceWrapper);
                 }
             }
@@ -80,7 +80,7 @@ public class ThriftClientAutoConfig {
 
     @Bean
     @ConditionalOnBean(ServiceInfoProvider.class)
-    public ServerManager clientManager(ServiceInfoProvider serviceInfoProvider, ChannelManager channelManager) {
+    public ServerManager serverManager(ServiceInfoProvider serviceInfoProvider, ChannelManager channelManager) {
         return new DefaultServerManager(serviceInfoProvider, channelManager);
     }
 

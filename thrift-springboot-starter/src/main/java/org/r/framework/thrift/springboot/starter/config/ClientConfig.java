@@ -25,12 +25,25 @@ public class ClientConfig {
     /**
      * thrift数据帧大小最大值
      */
-    private int maxFrameSize;
+    private int maxFrameSize = 67108864;
+
+    /**
+     * 扫描的基本包路径
+     */
+    private String basePackage;
 
     /**
      * 服务信息
      */
     private Map<String, String> serverInfos;
+
+    public String getBasePackage() {
+        return basePackage;
+    }
+
+    public void setBasePackage(String basePackage) {
+        this.basePackage = basePackage;
+    }
 
     public Map<String, String> getServerInfos() {
 

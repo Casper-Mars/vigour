@@ -41,13 +41,13 @@ public class ProxyClientBeanFactory implements InitializingBean, FactoryBean<Obj
         Object originBean;
 
         if (StringUtils.isEmpty(fallbackBeanName)) {
-            throw new RuntimeException("missing bean for service " + ifaceType.getCanonicalName());
+            throw new RuntimeException("Missing bean for service " + ifaceType.getCanonicalName());
         }
         originBean = context.getBean(fallbackBeanName);
         ServerManager manager;
         try {
             manager = context.getBean(ServerManager.class);
-            log.info("registry thrift server bean {}",ifaceType.getSimpleName());
+            log.info("Registry thrift server bean {}", ifaceType.getSimpleName());
             Class<?> iface = ClassTool.filterClass(ifaceType.getInterfaces(), "$Iface");
             Class<?> serviceClass = iface.getDeclaringClass();
             Class<?> clientClass = ClassTool.filterClass(serviceClass.getDeclaredClasses(), "$Client");
@@ -58,8 +58,10 @@ public class ProxyClientBeanFactory implements InitializingBean, FactoryBean<Obj
             Class<?>[] arg = new Class[]{TProtocol.class};
             Object[] argv = new Object[]{null};
             return enhancer.create(arg, argv);
+        } catch (BeansException be) {
+            log.error("Missing ServerManager bean. Can not create proxy bean for service {}. Rollback to origin bean {}.", ifaceType.getSimpleName(), fallbackBeanName);
         } catch (Exception e) {
-            log.error("missing clientManager bean. can not create proxy bean for service {}. rollback to origin bean {}", ifaceType.getSimpleName(),fallbackBeanName);
+            log.error(e.getMessage(), e);
         }
         return originBean;
     }
@@ -71,7 +73,7 @@ public class ProxyClientBeanFactory implements InitializingBean, FactoryBean<Obj
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        Assert.notNull(this.ifaceType, "client class must be set");
+        Assert.notNull(this.ifaceType, "Client class must be set");
     }
 
     @Override
