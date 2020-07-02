@@ -18,7 +18,7 @@
         </dependency>
         <dependency>
             <groupId>org.r.framework</groupId>
-            <artifactId>thrift-eureka-server</artifactId>
+            <artifactId>thrift-starter-eureka-client</artifactId>
         </dependency>
         <dependency>
             <groupId>org.r.framework</groupId>
