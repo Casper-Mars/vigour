@@ -41,6 +41,8 @@ public class ThriftClientsRegistrar implements ImportBeanDefinitionRegistrar, Re
     private Environment env;
     private ResourceLoader resourceLoader;
 
+    private static boolean init = false;
+
     /**
      * 配置文件配置的基础包扫描路径
      */
@@ -59,6 +61,9 @@ public class ThriftClientsRegistrar implements ImportBeanDefinitionRegistrar, Re
 
     @Override
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+        if (init) {
+            return;
+        }
         /*
          * 只有在配置了启用客户端，才进行bean的注册
          * 客户端的自动装配分开了两个地方，后期再进一步整合一起
@@ -69,6 +74,7 @@ public class ThriftClientsRegistrar implements ImportBeanDefinitionRegistrar, Re
         }
         basePackage = env.getProperty("thrift.client.base-package");
         registerThriftClient(importingClassMetadata, registry);
+        init = true;
     }
 
 

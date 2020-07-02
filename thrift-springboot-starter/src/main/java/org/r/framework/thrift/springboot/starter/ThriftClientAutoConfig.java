@@ -16,6 +16,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.CollectionUtils;
@@ -41,12 +42,15 @@ public class ThriftClientAutoConfig {
     @Bean
     @ConditionalOnMissingBean(ChannelManager.class)
     public ChannelManager channelManager(ConfigProperties configProperties) {
+        log.info("Create default channel manager");
         ClientConfig client = configProperties.getClient();
         return new DefaultChannelManager(client.getNetty().getWorkPoolSize(), client.getMaxFrameSize());
     }
 
     @Bean
-    public ServiceInfoProvider serviceInfoProvider(ConfigProperties configProperties) {
+    @ConditionalOnMissingBean(ServiceInfoProvider.class)
+    public ServiceInfoProvider serviceInfoProvider(ConfigProperties configProperties, ConfigurableApplicationContext applicationContext) {
+        log.info("Create default service info provider");
         ClientConfig client = configProperties.getClient();
         Map<String, String> serverInfos = client.getServerInfos();
         List<ServiceWrapper> serviceList = new LinkedList<>();
@@ -80,6 +84,7 @@ public class ThriftClientAutoConfig {
 
     @Bean
     @ConditionalOnBean(ServiceInfoProvider.class)
+    @ConditionalOnMissingBean(ServerManager.class)
     public ServerManager serverManager(ServiceInfoProvider serviceInfoProvider, ChannelManager channelManager) {
         return new DefaultServerManager(serviceInfoProvider, channelManager);
     }

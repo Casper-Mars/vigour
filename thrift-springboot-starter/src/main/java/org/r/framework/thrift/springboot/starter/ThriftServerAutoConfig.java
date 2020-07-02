@@ -49,7 +49,7 @@ public class ThriftServerAutoConfig {
     public ServerInfoProvider serverInfoProvider(ApplicationContext applicationContext) {
         String[] servicesName = applicationContext.getBeanNamesForAnnotation(ThriftService.class);
         if (servicesName.length <= 0 || servicesName[0] == null) {
-            throw new RuntimeException("missing service bean while starting the thrift server");
+            throw new RuntimeException("Missing service bean while starting the thrift server");
         }
 
         int port = configProperties.getServer().getPort() == 0 ? getBindingPort() : configProperties.getServer().getPort();
@@ -92,7 +92,7 @@ public class ThriftServerAutoConfig {
         try {
             serverSocket = new ServerSocket(0);
         } catch (IOException e) {
-            log.error("can not get a random port!!!!!!");
+            log.error("Can not get a random port!!!!!!");
             System.exit(-1);
         }
         int localPort = serverSocket.getLocalPort();

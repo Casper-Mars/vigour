@@ -1,3 +1,9 @@
+eureka:
+  client:
+    service-url:
+      defaultZone: http://114.55.253.170:13001/eureka
+  instance:
+    prefer-ip-address: true
 server:
   port: 8081
 spring:

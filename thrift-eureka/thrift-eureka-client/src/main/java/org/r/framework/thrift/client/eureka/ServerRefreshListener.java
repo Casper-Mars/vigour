@@ -26,7 +26,7 @@ public class ServerRefreshListener implements ApplicationListener<HeartbeatEvent
     @Override
     public void onApplicationEvent(HeartbeatEvent event) {
         if(eurekaServiceInfoProvider instanceof EurekaServiceInfoProvider){
-            log.info("get a eureka refresh event");
+            log.info("Get a eureka refresh event");
             ((EurekaServiceInfoProvider)eurekaServiceInfoProvider).refresh();
         }
     }

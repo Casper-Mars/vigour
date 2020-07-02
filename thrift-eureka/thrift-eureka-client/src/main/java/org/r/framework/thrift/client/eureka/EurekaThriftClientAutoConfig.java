@@ -3,7 +3,10 @@ package org.r.framework.thrift.client.eureka;
 import com.netflix.discovery.EurekaClient;
 import org.r.framework.thrift.client.eureka.provider.EurekaServiceInfoProvider;
 import org.r.framework.thrift.netty.provider.ServiceInfoProvider;
-import org.r.framework.thrift.springboot.starter.ThriftClientAutoConfig;
+import org.r.framework.thrift.springboot.starter.config.ConfigProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,12 +18,15 @@ import org.springframework.context.annotation.Primary;
  * @author casper
  **/
 @Configuration
-public class EurekaThriftClientAutoConfig extends ThriftClientAutoConfig {
+@ConditionalOnProperty(name = "thrift.client.enable", havingValue = "true")
+public class EurekaThriftClientAutoConfig {
 
+    private final Logger log = LoggerFactory.getLogger(EurekaThriftClientAutoConfig.class);
 
     @Bean
     @Primary
-    public ServiceInfoProvider serviceInfoProvider(ConfigurableApplicationContext applicationContext) {
+    public ServiceInfoProvider serviceInfoProvider(ConfigProperties configProperties, ConfigurableApplicationContext applicationContext) {
+        log.info("Create eureka service info provider");
         EurekaClient eurekaClient = applicationContext.getBean(EurekaClient.class);
         return new EurekaServiceInfoProvider(eurekaClient);
     }

@@ -42,7 +42,7 @@ public class ServerMetaDataProvider extends DefaultManagementMetadataProvider {
         List<String> serverNameList = allService.stream().map(t -> t.getName() + ":" + port).collect(Collectors.toList());
         String serviceListStr = JSONObject.toJSONString(serverNameList);
         metadataMap.put(Constants.SERVERINFO, serviceListStr);
-        log.info("registry service to eureka [{}]",serviceListStr);
+        log.info("Registry service to eureka [{}]",serviceListStr);
         return super.get(instance, serverPort, serverContextPath, managementContextPath, managementPort);
     }
 }
