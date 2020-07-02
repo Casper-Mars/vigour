@@ -9,13 +9,12 @@
     <!--        <relativePath/> &lt;!&ndash; lookup parent from repository &ndash;&gt;-->
     <!--    </parent>-->
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.r.framework</groupId>
-    <artifactId>thrift</artifactId>
+    <groupId>org.r.framework.thrift</groupId>
+    <artifactId>parent</artifactId>
     <version>1.0</version>
     <modules>
         <module>thrift-common</module>
         <module>thrift-netty</module>
-        <module>test</module>
         <module>thrift-springboot-starter</module>
         <module>thrift-netty-core</module>
         <module>thrift-starter-eureka-client</module>
@@ -81,27 +80,27 @@
             </dependency>
             <!--自家项目-->
             <dependency>
-                <groupId>org.r.framework</groupId>
+                <groupId>org.r.framework.thrift</groupId>
                 <artifactId>thrift-netty</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.r.framework</groupId>
+                <groupId>org.r.framework.thrift</groupId>
                 <artifactId>thrift-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.r.framework</groupId>
+                <groupId>org.r.framework.thrift</groupId>
                 <artifactId>thrift-springboot-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.r.framework</groupId>
+                <groupId>org.r.framework.thrift</groupId>
                 <artifactId>thrift-netty-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.r.framework</groupId>
+                <groupId>org.r.framework.thrift</groupId>
                 <artifactId>thrift-starter-eureka-client</artifactId>
                 <version>${project.version}</version>
             </dependency>
