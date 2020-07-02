@@ -19,6 +19,7 @@
         <module>test</module>
         <module>thrift-springboot-starter</module>
         <module>thrift-netty-core</module>
+        <module>thrift-starter-eureka-client</module>
     </modules>
     <packaging>pom</packaging>
 
