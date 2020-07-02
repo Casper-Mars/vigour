@@ -9,6 +9,84 @@
 
 ---
 
+## 使用指南
+
+### 概念介绍
+
+框架是基于c/s模式设计的，客户端和服务端都兼容在框架中，通过配置文件进行配置激活。
+
+### 配置介绍
+
+框架支持的配置属性和默认值如下：
+```yaml
+thrift:
+    client:
+        netty: #客户端规定启用netty
+          enable: false #是否启用netty
+          boss-pool-size: 1 #netty的调度线程池大小(客户端不需要)
+          work-pool-size: 4 #netty的io处理线程池大小
+        base-package: com.demo #包扫描路径，用于指示带有@ThriftClient的类所在的地方
+        enable: false #是否启动客户端
+        max-frame-size: 67108864 #thrift数据帧的大小的最大值
+        server-infos: #一个map结构的数据集合，key为服务端地址(ip-端口)。value为服务名称，多个服务名称用逗号隔开
+          "localhost-8090": AuthService,LoginService
+    server:
+        enable: false #是否启用服务端
+        port: 8090 #thrift服务处理监听的端口
+        name: thrift-server #名称，用处不大
+        max-connections: 10 #服务端能同时处理的最大连接数
+        max-frame-size: 67108864 #thrift数据帧的大小的最大值
+        thrift-version: 0.13.0 #thrift版本号，暂时无用处
+        netty: #可选是否启用netty作为底层通讯处理。默认是不启用的netty而用原生的thrift服务处理
+          enable: true #是否启用netty
+          boss-pool-size: 1 #netty的io处理线程池大小
+          work-pool-size: 4 #netty的调度线程池大小
+```
+
+### 客户端使用
+
+* 单应用使用
+
+使用springboot框架的，只需引入thrift-springboot-starter依赖即可。客户端的使用方式和feign类型。区别在于需要使用者实现thrift的接口并在类上加入注解@ThriftClient。该实现类作为调用熔断时使用的类。例如：
+```java
+@ThriftClient
+public class AuthClient implements AuthService.Iface {
+    @Override
+    public String auth(String username, String password) throws TException {
+        return "本地熔断_auth";
+    }
+}
+```
+如果不需要熔断处理，方法体置空即可。
+使用其他框架的，需要引入thrift-netty依赖，并手动配置thrift接口实现类。thrift-netty包提供了创建基于netty的TTransport的逻辑。
+
+* 微服务使用
+
+框架提供了支持eureka服务发现的实现。参考这种思路，可以扩展到其他的服务发现中间件。
+使用eureka的实现版本(thrift-starter-eureka-client)需要项目使用了spring cloud全家桶并引入netflix的eureka依赖。
+
+### 服务端使用
+
+服务端的依赖和客户端的一样，使用方式也是基本一样，只是使用的注解不一样。
+服务端要在实现了thrift接口的类上加上@ThriftService注解。例如：
+```java
+@ThriftService
+public class TestServcie implements LoginService.Iface{
+
+    @Value("${server.port}")
+    private int port;
+
+    @Override
+    public String doAction(Request request) throws TException {
+        return String.valueOf(port);
+    }
+}
+```
+注意：ThriftService和ThriftClient一样，都是继承了spring的@Component的。
+
+
+---
+
 ## 开发阶段
 
 ### 第一阶段（已完成）
@@ -49,13 +127,28 @@
 修改客户端处理服务的逻辑。原来的扫描全部的服务并建立代理bean的方式有缺陷。在微服务不需要大部分的服务时，只会消耗系统资源去维护服务列表（包括列表刷新和底层socket的操作）。
 因此，现在改成按需建立代理bean，只有被ThriftClient注解注释的才会被认为是需要的服务而创建代理bean。同时被注解注释的类会作为熔断回调类在服务down的时候调用。
 
-### 第七阶段（待实现）
+### 第七阶段（已完成）
 
 修改客户端的socket管理。目前的管理方式没有处理服务端掉线的问题。尝试使用netty做底层通讯框架，方便管理socket和处理各种事件。设置掉线重连机制。
 
-### 第八阶段（待实现）
+### 第八阶段（已完成）
 
 thrift耦合了netty后，底层的实际通讯逻辑经由netty实现。把耦合后的thrift和netty从spring的逻辑中抽离出来，形成新的模块，spring只是负责管理依赖和注入依赖，thrift负责管理rpc的协议和调用，netty负责管理底层的网络通讯
+
+### 第九阶段(待实现)
+
+* 重新处理服务端的逻辑：thrift-netty的服务端代码大部分主要的逻辑还是沿用Facebook的nifty项目的，而且经过改造过，某些细节上和原来的不一样，魔鬼往往就藏在这些细节中。所以在此阶段需要对服务端的逻辑重新梳理。
+* 客户端和服务端添加超时控制：在主流的rpc处理中，都会有超时处理，要不重试要不异常。项目中还未对超时做处理。
+
+### 第十阶段(待实现)
+
+* 原始的thrift是支持多种协议的，例如：常用的二进制压缩协议、符合thrift-json数据格式的http协议。需要扩展框架支持的协议
+
+### 第十一阶段(待实现)
+
+* 客户端对channel是复用的，而且是支持异步的rpc调用。但是请求量大时，一个channel可能负载不了，需要引入一套智能负载算法，在负载量大的时候动态增加channel副本减轻单一channel的压力。
+
+
 
 ---
 
@@ -169,10 +262,6 @@ thrift耦合了netty后，底层的实际通讯逻辑经由netty实现。把耦�
 经过netty化后的客户端，可以减少维护成本，服务的可用只需根据netty的链接状态即可维护，此时的eureka更多的只是作为一个服务信息增量提供的中间件。
 
 ```
-
-
-
-
 
 
 
