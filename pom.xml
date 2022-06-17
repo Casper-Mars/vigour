@@ -22,7 +22,7 @@
         <springbootParent.version>2.2.6.RELEASE</springbootParent.version>
         <libthrift.version>0.13.0</libthrift.version>
         <netty.version>4.1.49.Final</netty.version>
-        <fastjson.version>1.2.31</fastjson.version>
+        <fastjson.version>1.2.83</fastjson.version>
         <guava.version>29.0-jre</guava.version>
         <disruptor.version>3.4.2</disruptor.version>
     </properties>
